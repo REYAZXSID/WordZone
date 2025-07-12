@@ -34,24 +34,32 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
     {
-        quote: "THE ONLY THING WE HAVE TO FEAR IS FEAR ITSELF.",
-        author: "FRANKLIN D. ROOSEVELT"
+        quote: "BE KIND WHENEVER POSSIBLE",
+        author: "DALAI LAMA"
     },
     {
-        quote: "TO BE OR NOT TO BE, THAT IS THE QUESTION.",
-        author: "WILLIAM SHAKESPEARE"
+        quote: "DREAM AS IF YOU WILL LIVE FOREVER",
+        author: "JAMES DEAN"
     },
     {
-        quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.",
-        author: "PANGRAM"
+        quote: "SIMPLICITY IS THE ULTIMATE SOPHISTICATION",
+        author: "LEONARDO DA VINCI"
     },
     {
-        quote: "I THINK, THEREFORE I AM.",
-        author: "RENÉ DESCARTES"
+        quote: "WHATEVER YOU ARE BE A GOOD ONE",
+        author: "ABRAHAM LINCOLN"
     },
     {
-        quote: "THAT'S ONE SMALL STEP FOR A MAN, ONE GIANT LEAP FOR MANKIND.",
-        author: "NEIL ARMSTRONG"
+        quote: "LIVE THE LIFE YOU HAVE IMAGINED",
+        author: "HENRY DAVID THOREAU"
+    },
+    {
+        quote: "THE JOURNEY OF A THOUSAND MILES BEGINS WITH A SINGLE STEP",
+        author: "LAO TZU"
+    },
+    {
+        quote: "KNOWLEDGE IS POWER",
+        author: "FRANCIS BACON"
     }
 ];
 
@@ -61,7 +69,9 @@ const puzzleKeys = [
     "ZXCVBNMASDFGHJKLPOIUYTREWQ",
     "PLMOKNIJBUHVYGCTFXRDZESWAQ",
     "ASDFGHJKLQWERTYUIOPZXCVBNM",
-    "POIUYTREWQLKJHGFDSAMNBVCXZ"
+    "POIUYTREWQLKJHGFDSAMNBVCXZ",
+    "MNBVCXZASDFGHJKLPOIUYTREWQ",
+    "QAZWSXEDCRFVTGBYHNUJMIKOLP"
 ]
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
