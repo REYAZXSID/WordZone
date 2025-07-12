@@ -38,7 +38,7 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 };
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
-    // Easy (<= 15 letters)
+    // Easy (<= 19 letters)
     { quote: "GO TO HELL", author: "UNKNOWN" },
     { quote: "BE YOURSELF", author: "OSCAR WILDE" },
     { quote: "I AM LEGEND", author: "RICHARD MATHESON"},
@@ -48,22 +48,22 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
     { quote: "I HAVE A DREAM", author: "MARTIN LUTHER KING" },
     { quote: "THINK DIFFERENT", author: "APPLE" },
     
-    // Medium (16-29 letters)
+    // Medium (20-29 letters)
     { quote: "KNOWLEDGE IS POWER", author: "FRANCIS BACON" },
     { quote: "SIMPLICITY IS THE KEY", author: "BRUCE LEE"},
     { quote: "LEARNING NEVER ENDS", author: "UNKNOWN" },
     { quote: "STAY HUNGRY STAY FOOLISH", author: "STEVE JOBS" },
     { quote: "LOVE FOR ALL HATRED FOR NONE", author: "KHALIFATUL MASIH III" },
 
-    // Hard (30-40 letters)
+    // Hard (30-39 letters)
     { quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", author: "PANGRAM" },
-    { quote: "TWO ROADS DIVERGED IN A WOOD AND I TOOK THE ONE LESS TRAVELED BY", author: "ROBERT FROST" },
-
-    // Intermediate (30+... but we'll use it for 30-40 for now)
-    { quote: "THAT'S ONE SMALL STEP FOR A MAN ONE GIANT LEAP FOR MANKIND", author: "NEIL ARMSTRONG" },
     { quote: "THE ONLY THING WE HAVE TO FEAR IS FEAR ITSELF", author: "FRANKLIN D ROOSEVELT" },
     
-    // Advance (40+)
+    // Intermediate (40-49 letters)
+    { quote: "THAT'S ONE SMALL STEP FOR A MAN ONE GIANT LEAP FOR MANKIND", author: "NEIL ARMSTRONG" },
+    
+    // Advance (50+)
+    { quote: "TWO ROADS DIVERGED IN A WOOD AND I TOOK THE ONE LESS TRAVELED BY", author: "ROBERT FROST" },
     { quote: "THE GREATEST GLORY IN LIVING LIES NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL", author: "NELSON MANDELA"},
     { quote: "WHETHER YOU THINK YOU CAN OR YOU THINK YOU CAN'T YOU'RE RIGHT", author: "HENRY FORD" },
 
@@ -83,10 +83,10 @@ const puzzleKeys = [
 
 const getDifficulty = (quote: string): Difficulty => {
     const length = quote.replace(/[^A-Z]/g, '').length;
-    if (length <= 15) return 'easy';
-    if (length <= 29) return 'medium';
-    if (length <= 40) return 'hard';
-    if (length <= 50) return 'intermediate';
+    if (length < 20) return 'easy';
+    if (length < 30) return 'medium';
+    if (length < 40) return 'hard';
+    if (length < 50) return 'intermediate';
     return 'advance';
 }
 
