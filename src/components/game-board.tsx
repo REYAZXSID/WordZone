@@ -40,6 +40,20 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
 
+  const giveInitialHint = useCallback(() => {
+    const allEncryptedLetters = Object.keys(solvedCipher);
+    if (allEncryptedLetters.length > 0) {
+      const randomEncryptedLetter = allEncryptedLetters[Math.floor(Math.random() * allEncryptedLetters.length)];
+      const decryptedLetter = solvedCipher[randomEncryptedLetter];
+      setUserGuesses({ [randomEncryptedLetter]: decryptedLetter });
+    }
+  }, [solvedCipher]);
+
+  useEffect(() => {
+    // Give one hint when a new puzzle loads
+    giveInitialHint();
+  }, [puzzle.id, giveInitialHint]);
+
   const checkSolution = useCallback(() => {
     if (isComplete) return;
     const allEncryptedChars = Object.keys(letterToNumberMap);
@@ -50,7 +64,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
       setShowWinDialog(true);
       onGameComplete?.();
     }
-  }, [puzzle.text, userGuesses, onGameComplete, solvedCipher, letterToNumberMap, isComplete]);
+  }, [userGuesses, onGameComplete, solvedCipher, letterToNumberMap, isComplete]);
 
   useEffect(() => {
     // Only check if all letters have a guess
@@ -127,9 +141,9 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   };
 
   const handleReset = () => {
-    setUserGuesses({});
     setSelectedLetter(null);
     setIsComplete(false);
+    giveInitialHint(); // Reset to initial state with one hint
   };
 
   const usedLetters = Object.values(userGuesses);
