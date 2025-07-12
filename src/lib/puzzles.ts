@@ -68,11 +68,11 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
         author: "UNKNOWN"
     },
     {
-        quote: "STAY HUNGRY STAY FOOLISH", // 26 > 20, but we need some hard ones.
+        quote: "STAY HUNGRY STAY FOOLISH", // 23
         author: "STEVE JOBS"
     },
     {
-        quote: "LOVE FOR ALL HATRED FOR NONE", // 29 > 20
+        quote: "LOVE FOR ALL HATRED FOR NONE", // 26
         author: "KHALIFATUL MASIH III"
     }
 ];
@@ -101,9 +101,9 @@ export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
     }
 });
 
-const easyPuzzles = puzzles.filter(p => p.quote.length <= 10);
-const mediumPuzzles = puzzles.filter(p => p.quote.length > 10 && p.quote.length <= 15);
-const hardPuzzles = puzzles.filter(p => p.quote.length > 15);
+const easyPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length <= 15);
+const mediumPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length > 15 && p.quote.replace(/ /g, '').length <= 20);
+const hardPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length > 20);
 
 
 export const getDailyPuzzle = (): Puzzle => {

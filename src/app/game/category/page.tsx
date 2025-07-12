@@ -7,19 +7,19 @@ import { BarChart, BarChart3, BarChart4, ChevronRight } from 'lucide-react';
 const categories = [
   {
     name: 'Easy',
-    description: '1-10 letters',
+    description: '1-15 letters',
     href: '/game?difficulty=easy',
     icon: <BarChart className="h-8 w-8 text-green-500" />,
   },
   {
     name: 'Medium',
-    description: '11-15 letters',
+    description: '16-20 letters',
     href: '/game?difficulty=medium',
     icon: <BarChart3 className="h-8 w-8 text-yellow-500" />,
   },
   {
     name: 'Hard',
-    description: '16-20 letters',
+    description: '21+ letters',
     href: '/game?difficulty=hard',
     icon: <BarChart4 className="h-8 w-8 text-red-500" />,
   },
