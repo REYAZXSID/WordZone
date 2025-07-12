@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Puzzle, Menu, ArrowRight, Calendar, User } from 'lucide-react';
+import { Puzzle, Menu, ArrowRight, Calendar, User, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -39,7 +39,7 @@ export default function Home() {
             Sharpen your mind with daily cryptographic challenges. Decode quotes, unlock achievements, and climb the leaderboard.
           </p>
           
-          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
              <Button asChild size="lg" className="h-14 text-lg">
               <Link href="/game/category">
                 Start Game
@@ -50,6 +50,12 @@ export default function Home() {
               <Link href="/daily">
                 <Calendar className="mr-2 h-5 w-5" />
                 Daily Puzzle
+              </Link>
+            </Button>
+            <Button asChild size="lg" className="h-14 text-lg" variant="secondary">
+              <Link href="/settings">
+                <Settings className="mr-2 h-5 w-5" />
+                Settings
               </Link>
             </Button>
           </div>

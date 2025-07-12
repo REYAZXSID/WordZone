@@ -77,12 +77,6 @@ const menuItems: MenuItem[] = [
     href: '/feedback',
     icon: <MessageSquareWarning className="h-8 w-8 text-gray-500" />,
   },
-  {
-    name: 'Settings',
-    description: 'Adjust theme, sounds, and preferences.',
-    href: '/settings',
-    icon: <Settings className="h-8 w-8 text-slate-500" />,
-  }
 ];
 
 export default function MenuPage() {
