@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus, BadgePercent } from 'lucide-react';
+import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 
 type CoinPack = {
@@ -95,7 +96,7 @@ export function CoinShopClientPage() {
         <h2 className="text-2xl font-bold text-center mb-4">Buy Coins</h2>
         <div className="space-y-3">
           {coinPacks.map((pack) => (
-            <Card key={pack.id} className={cn("transition-all", pack.isBestValue && "border-primary ring-2 ring-primary")}>
+            <Card key={pack.id} className={cn("transition-all relative", pack.isBestValue && "border-primary ring-2 ring-primary")}>
                {pack.isBestValue && (
                     <div className="absolute -top-3 right-4">
                         <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1">
