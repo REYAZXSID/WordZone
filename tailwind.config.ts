@@ -1,7 +1,7 @@
 import type {Config} from 'tailwindcss';
 
 export default {
-  darkMode: ['class', '[data-theme="dark"]', '[data-theme="neon"]'],
+  darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -90,7 +90,7 @@ export default {
         },
         'correct-guess': {
           '0%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.1)', backgroundColor: 'hsl(var(--accent))' },
+          '50%': { transform: 'scale(1.1)', backgroundColor: 'hsla(var(--accent), 0.5)' },
           '100%': { transform: 'scale(1)' },
         }
       },

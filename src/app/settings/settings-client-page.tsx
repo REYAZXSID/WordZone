@@ -89,7 +89,7 @@ export function SettingsClientPage() {
             <div className="space-y-0.5">
               <Label htmlFor="theme" className="text-base">Appearance</Label>
               <p className="text-sm text-muted-foreground">
-                Switch between light and dark mode.
+                Switch between light, dark, and neon modes.
               </p>
             </div>
             <ThemeToggle />
