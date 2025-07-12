@@ -35,8 +35,8 @@ export default function Home() {
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary breathing-icon-animation">
             <Puzzle className="h-12 w-12" />
           </div>
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            CryptoPuzzle
+          <h1 className="text-6xl font-bold tracking-tight">
+            <span className="animated-gradient-text">Cryptify</span>
           </h1>
           <p className="mt-4 max-w-md text-lg text-muted-foreground">
             Sharpen your mind with daily cryptographic challenges. Decode quotes, unlock achievements, and climb the leaderboard.

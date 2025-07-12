@@ -150,3 +150,25 @@ body {
 .glow-effect-2 {
   animation: glow-effect 25s ease-in-out infinite reverse;
 }
+
+@keyframes text-gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-text {
+    background: linear-gradient(
+        -45deg,
+        hsl(var(--chart-1)),
+        hsl(var(--chart-2)),
+        hsl(var(--chart-3)),
+        hsl(var(--chart-4)),
+        hsl(var(--chart-5))
+    );
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-gradient-animation 10s ease infinite;
+}

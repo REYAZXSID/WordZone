@@ -72,7 +72,7 @@ export function FeedbackClientPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Share Your Thoughts</CardTitle>
-                        <CardDescription>We'd love to hear what you think about CryptoPuzzle.</CardDescription>
+                        <CardDescription>We'd love to hear what you think about Cryptify.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...feedbackForm}>

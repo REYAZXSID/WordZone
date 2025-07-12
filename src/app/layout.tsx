@@ -5,8 +5,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'CryptoPuzzle',
-  description: 'Solve substitution ciphers and test your skills.',
+  title: 'Cryptify',
+  description: 'Sharpen your mind with daily cryptographic challenges on Cryptify.',
 };
 
 export default function RootLayout({
