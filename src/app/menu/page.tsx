@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -16,6 +16,12 @@ const menuItems: MenuItem[] = [
     description: 'Solve the puzzle of the day.',
     href: '/daily',
     icon: <Calendar className="h-8 w-8 text-blue-500" />,
+  },
+  {
+    name: 'Daily Missions',
+    description: 'Complete daily tasks for rewards.',
+    href: '/missions',
+    icon: <ListChecks className="h-8 w-8 text-purple-500" />,
   },
   {
     name: 'Profile',
