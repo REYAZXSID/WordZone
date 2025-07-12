@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Puzzle, Menu, ArrowRight, Calendar } from 'lucide-react';
+import { Puzzle, Menu, ArrowRight, Calendar, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -12,7 +12,13 @@ export default function Home() {
         <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-accent/30 rounded-full filter blur-3xl opacity-50 glow-effect-2"></div>
       </div>
       
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-end z-10">
+      <header className="absolute top-0 left-0 right-0 p-4 flex justify-end z-10 gap-2">
+         <Button asChild variant="ghost" size="icon">
+          <Link href="/login">
+            <User className="h-6 w-6" />
+            <span className="sr-only">Login</span>
+          </Link>
+        </Button>
         <Button asChild variant="ghost" size="icon">
           <Link href="/menu">
             <Menu className="h-6 w-6" />

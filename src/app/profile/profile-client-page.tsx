@@ -7,18 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Coins, Puzzle, Flame, Lightbulb, Pencil, LogOut, Trash2, Medal, CheckCircle2 } from 'lucide-react';
+import { Coins, Puzzle, Flame, Lightbulb, Pencil, CheckCircle2, Medal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { initialAchievements, type Achievement } from '../achievements/achievements-client-page';
 import { cn } from '@/lib/utils';
