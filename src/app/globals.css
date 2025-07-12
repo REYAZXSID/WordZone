@@ -113,11 +113,11 @@ body {
 @keyframes pulse-success {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 hsla(var(--accent), 0.7);
+    box-shadow: 0 0 0 0 hsla(var(--primary), 0.7);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 10px hsla(var(--accent), 0);
+    box-shadow: 0 0 0 10px hsla(var(--primary), 0);
   }
 }
 
