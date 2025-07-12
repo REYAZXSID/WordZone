@@ -186,7 +186,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
       <main className="flex-1 flex flex-col items-center justify-start p-4 gap-8 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="w-full text-center mb-6">
-             <p className="text-sm text-muted-foreground tracking-wider">"{puzzle.author}"</p>
           </div>
           <div className="flex flex-wrap justify-center gap-x-3 gap-y-4">
             {puzzle.text.split(' ').map((word, wordIndex) => (
