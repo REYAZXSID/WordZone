@@ -325,37 +325,38 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       />
       <main className="flex flex-1 flex-col items-center justify-between p-4 md:p-6">
         <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-start pt-4">
-          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
-            {puzzle.text.split('').map((char, index) => {
-              if (ALPHABET.includes(char)) {
-                return (
-                  <div
-                    key={`${char}-${index}`}
-                    onClick={() => handleLetterSelect(char)}
-                    className={cn(
-                      "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                      selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
-                      userGuesses[char] && solvedCipher[char] === userGuesses[char] ? "bg-green-500/10 border-green-500/50" : "",
-                      animateCorrect === char ? 'correct-guess-animation' : ''
-                    )}
-                  >
-                    <div className="text-muted-foreground text-xs pt-1">{letterToNumberMap[char]}</div>
-                    <div className="text-lg font-bold text-foreground pb-1">
-                      {userGuesses[char] || ''}
-                    </div>
-                  </div>
-                );
-              }
-              if (char === ' ') {
-                 return <div key={`space-${index}`} className="w-4" />;
-              }
-              // Render non-alphabetic characters like punctuation directly
-              return (
-                  <div key={`punct-${index}`} className="flex h-12 w-5 items-end justify-center pb-1 text-xl font-bold">
-                    {char}
-                  </div>
-              );
-            })}
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-4">
+            {puzzle.text.split(' ').map((word, wordIndex) => (
+              <div key={wordIndex} className="flex gap-x-1">
+                {word.split('').map((char, charIndex) => {
+                  if (ALPHABET.includes(char)) {
+                    return (
+                      <div
+                        key={`${char}-${wordIndex}-${charIndex}`}
+                        onClick={() => handleLetterSelect(char)}
+                        className={cn(
+                          "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
+                          selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                          userGuesses[char] && solvedCipher[char] === userGuesses[char] ? "bg-green-500/10 border-green-500/50" : "",
+                          animateCorrect === char ? 'correct-guess-animation' : ''
+                        )}
+                      >
+                        <div className="text-muted-foreground text-xs pt-1">{letterToNumberMap[char]}</div>
+                        <div className="text-lg font-bold text-foreground pb-1">
+                          {userGuesses[char] || ''}
+                        </div>
+                      </div>
+                    );
+                  }
+                  // Render non-alphabetic characters like punctuation directly
+                  return (
+                      <div key={`punct-${wordIndex}-${charIndex}`} className="flex h-12 w-5 items-end justify-center pb-1 text-xl font-bold">
+                        {char}
+                      </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
 
