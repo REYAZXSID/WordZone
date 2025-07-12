@@ -84,10 +84,14 @@ const puzzleKeys = [
 const getDifficulty = (quote: string): Difficulty => {
     const length = quote.replace(/[^A-Z]/g, '').length;
     if (length < 20) return 'easy';
-    if (length < 30) return 'medium';
-    if (length < 40) return 'hard';
-    if (length < 50) return 'intermediate';
-    return 'advance';
+    if (length >= 20 && length <= 25) return 'medium';
+    if (length >= 30 && length <= 35) return 'hard';
+    if (length > 35 && length <= 40) return 'intermediate';
+    if (length > 40 && length <= 45) return 'advance';
+    // Fallback for quotes outside the defined ranges
+    if (length > 45) return 'advance';
+    if (length > 25 && length < 30) return 'medium'; // if between 25 and 30
+    return 'easy'; // Default fallback
 }
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
