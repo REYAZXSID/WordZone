@@ -34,28 +34,28 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
     {
-        quote: "BE KIND WHENEVER POSSIBLE",
-        author: "DALAI LAMA"
+        quote: "BE YOURSELF",
+        author: "OSCAR WILDE"
     },
     {
-        quote: "DREAM AS IF YOU WILL LIVE FOREVER",
-        author: "JAMES DEAN"
+        quote: "I THINK THEREFORE I AM",
+        author: "RENE DESCARTES"
     },
     {
-        quote: "SIMPLICITY IS THE ULTIMATE SOPHISTICATION",
-        author: "LEONARDO DA VINCI"
+        quote: "TIME IS MONEY",
+        author: "BENJAMIN FRANKLIN"
     },
     {
-        quote: "WHATEVER YOU ARE BE A GOOD ONE",
-        author: "ABRAHAM LINCOLN"
+        quote: "I HAVE A DREAM",
+        author: "MARTIN LUTHER KING"
     },
     {
-        quote: "LIVE THE LIFE YOU HAVE IMAGINED",
-        author: "HENRY DAVID THOREAU"
+        quote: "STAY HUNGRY STAY FOOLISH",
+        author: "STEVE JOBS"
     },
     {
-        quote: "THE JOURNEY OF A THOUSAND MILES BEGINS WITH A SINGLE STEP",
-        author: "LAO TZU"
+        quote: "THE GREATEST GLORY IS NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL",
+        author: "NELSON MANDELA"
     },
     {
         quote: "KNOWLEDGE IS POWER",
