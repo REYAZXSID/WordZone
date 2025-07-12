@@ -242,10 +242,12 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
                 Congratulations!
               </AlertDialogTitle>
               <AlertDialogDescription className="text-md py-4">
-                You've successfully decoded the quote:
-                <blockquote className="mt-2 border-l-2 border-primary pl-4 italic">
-                  "{puzzle.quote}"
-                </blockquote>
+                <div>
+                  <p>You've successfully decoded the quote:</p>
+                  <blockquote className="mt-2 border-l-2 border-primary pl-4 italic">
+                    "{puzzle.quote}"
+                  </blockquote>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
