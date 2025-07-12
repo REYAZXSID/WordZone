@@ -3,25 +3,37 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart, BarChart3, BarChart4, ChevronRight } from 'lucide-react';
+import type { Difficulty } from '@/lib/puzzles';
 
-const categories = [
+type Category = {
+  name: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+  difficulty: Difficulty;
+};
+
+const categories: Category[] = [
   {
     name: 'Easy',
     description: '1-15 letters',
-    href: '/game?difficulty=easy',
+    href: '/game/easy',
     icon: <BarChart className="h-8 w-8 text-green-500" />,
+    difficulty: 'easy',
   },
   {
     name: 'Medium',
     description: '16-20 letters',
-    href: '/game?difficulty=medium',
+    href: '/game/medium',
     icon: <BarChart3 className="h-8 w-8 text-yellow-500" />,
+    difficulty: 'medium',
   },
   {
     name: 'Hard',
     description: '21+ letters',
-    href: '/game?difficulty=hard',
+    href: '/game/hard',
     icon: <BarChart4 className="h-8 w-8 text-red-500" />,
+    difficulty: 'hard',
   },
 ];
 

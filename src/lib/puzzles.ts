@@ -26,6 +26,7 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
     .toUpperCase()
     .split("")
     .map((char) => {
+      // Preserve spaces and punctuation
       if (cipher[char]) {
         return cipher[char];
       }
@@ -35,60 +36,36 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 };
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
-    {
-        quote: "GO TO HELL", // 10
-        author: "UNKNOWN"
-    },
-    {
-        quote: "BE YOURSELF", // 11
-        author: "OSCAR WILDE"
-    },
-    {
-        quote: "TIME IS MONEY", // 13
-        author: "BENJAMIN FRANKLIN"
-    },
-    {
-        quote: "NEVER GIVE UP", // 13
-        author: "WINSTON CHURCHILL"
-    },
-    {
-        quote: "I HAVE A DREAM", // 14
-        author: "MARTIN LUTHER KING"
-    },
-    {
-        quote: "THINK DIFFERENT", // 15
-        author: "APPLE"
-    },
-    {
-        quote: "KNOWLEDGE IS POWER", // 18
-        author: "FRANCIS BACON"
-    },
-    {
-        quote: "LEARNING NEVER ENDS", // 20
-        author: "UNKNOWN"
-    },
-    {
-        quote: "STAY HUNGRY STAY FOOLISH", // 23
-        author: "STEVE JOBS"
-    },
-    {
-        quote: "LOVE FOR ALL HATRED FOR NONE", // 26
-        author: "KHALIFATUL MASIH III"
-    }
+    // Easy (<= 15 letters)
+    { quote: "GO TO HELL", author: "UNKNOWN" },
+    { quote: "BE YOURSELF", author: "OSCAR WILDE" },
+    { quote: "I AM LEGEND", author: "RICHARD MATHESON"},
+    { quote: "JUST DO IT", author: "NIKE"},
+    { quote: "TIME IS MONEY", author: "BENJAMIN FRANKLIN" },
+    { quote: "NEVER GIVE UP", author: "WINSTON CHURCHILL" },
+    { quote: "I HAVE A DREAM", author: "MARTIN LUTHER KING" },
+    { quote: "THINK DIFFERENT", author: "APPLE" },
+    
+    // Medium (16-20 letters)
+    { quote: "KNOWLEDGE IS POWER", author: "FRANCIS BACON" },
+    { quote: "SIMPLICITY IS THE KEY", author: "BRUCE LEE"},
+    { quote: "LEARNING NEVER ENDS", author: "UNKNOWN" },
+
+    // Hard (21+ letters)
+    { quote: "STAY HUNGRY STAY FOOLISH", author: "STEVE JOBS" },
+    { quote: "LOVE FOR ALL HATRED FOR NONE", author: "KHALIFATUL MASIH III" },
+    { quote: "THE GREATEST GLORY IS NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL", author: "CONFUCIUS"},
 ];
 
 
 const puzzleKeys = [
-    "QWERTYUIOPASDFGHJKLZXCVBNM",
-    "ZXCVBNMASDFGHJKLPOIUYTREWQ",
-    "PLMOKNIJBUHVYGCTFXRDZESWAQ",
-    "ASDFGHJKLQWERTYUIOPZXCVBNM",
-    "POIUYTREWQLKJHGFDSAMNBVCXZ",
-    "MNBVCXZASDFGHJKLPOIUYTREWQ",
-    "QAZWSXEDCRFVTGBYHNUJMIKOLP",
-    "LKJHGFDSAPOIUYTREWQMNBVCXZ",
-    "AZSXDCFVGBHNJMKLIUYTREWQPO",
-    "YTREWQPOIUASDFGHJKLMNBVCXZ"
+    "QWERTYUIOPASDFGHJKLZXCVBNM", "ZXCVBNMASDFGHJKLPOIUYTREWQ",
+    "PLMOKNIJBUHVYGCTFXRDZESWAQ", "ASDFGHJKLQWERTYUIOPZXCVBNM",
+    "POIUYTREWQLKJHGFDSAMNBVCXZ", "MNBVCXZASDFGHJKLPOIUYTREWQ",
+    "QAZWSXEDCRFVTGBYHNUJMIKOLP", "LKJHGFDSAPOIUYTREWQMNBVCXZ",
+    "AZSXDCFVGBHNJMKLIUYTREWQPO", "YTREWQPOIUASDFGHJKLMNBVCXZ",
+    "QWERTZUIOPASDFGHJKLYXCVBNM", "YXCVBNMASDFGHJKLQWERTZUIOP",
+    "ZAQWSXCDERFVBGTYHNMJUIKLOP", "PMLKONIJBGUHVYFCXDRZESWAQT"
 ]
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
@@ -101,10 +78,22 @@ export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
     }
 });
 
-const easyPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length <= 15);
-const mediumPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length > 15 && p.quote.replace(/ /g, '').length <= 20);
-const hardPuzzles = puzzles.filter(p => p.quote.replace(/ /g, '').length > 20);
+const easyPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length <= 15);
+const mediumPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length > 15 && p.quote.replace(/[^A-Z]/g, '').length <= 20);
+const hardPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length > 20);
 
+const getPuzzlePool = (difficulty: Difficulty): Puzzle[] => {
+    switch (difficulty) {
+        case 'easy':
+            return easyPuzzles.length > 0 ? easyPuzzles : puzzles;
+        case 'medium':
+            return mediumPuzzles.length > 0 ? mediumPuzzles : puzzles;
+        case 'hard':
+            return hardPuzzles.length > 0 ? hardPuzzles : puzzles;
+        default:
+            return puzzles;
+    }
+}
 
 export const getDailyPuzzle = (): Puzzle => {
   const now = new Date();
@@ -115,24 +104,15 @@ export const getDailyPuzzle = (): Puzzle => {
   return puzzles[dayOfYear % puzzles.length];
 };
 
-export const getRandomPuzzle = (difficulty?: Difficulty): Puzzle => {
-    let puzzlePool: Puzzle[];
+export const getTotalPuzzles = (difficulty: Difficulty): number => {
+    return getPuzzlePool(difficulty).length;
+}
 
-    switch (difficulty) {
-        case 'easy':
-            puzzlePool = easyPuzzles.length > 0 ? easyPuzzles : puzzles;
-            break;
-        case 'medium':
-            puzzlePool = mediumPuzzles.length > 0 ? mediumPuzzles : puzzles;
-            break;
-        case 'hard':
-            puzzlePool = hardPuzzles.length > 0 ? hardPuzzles : puzzles;
-            break;
-        default:
-            puzzlePool = puzzles;
-    }
-    
-    return puzzlePool[Math.floor(Math.random() * puzzlePool.length)];
+export const getPuzzleForLevel = (difficulty: Difficulty, level: number): Puzzle => {
+    const puzzlePool = getPuzzlePool(difficulty);
+    // level is 1-based, array is 0-based
+    const index = (level - 1) % puzzlePool.length;
+    return puzzlePool[index];
 }
 
 export const invertCipher = (cipher: Record<string, string>): Record<string, string> => {

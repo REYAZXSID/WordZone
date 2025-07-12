@@ -6,7 +6,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, RotateCcw, CheckCircle, RefreshCw } from 'lucide-react';
+import { Lightbulb, RotateCcw, CheckCircle, RefreshCw, PartyPopper, ArrowRight, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -23,13 +23,16 @@ import { ThemeToggle } from './theme-toggle';
 
 type GameBoardProps = {
   puzzle: Puzzle;
+  level: number;
   onGameComplete?: () => void;
-  onNewGame?: () => void;
+  onNextLevel?: () => void;
+  onPlayAgain?: () => void;
+  onMainMenu?: () => void;
 };
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps) {
+export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAgain, onMainMenu }: GameBoardProps) {
   const [userGuesses, setUserGuesses] = useState<Record<string, string>>({});
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -66,6 +69,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
   useEffect(() => {
     resetGame();
+    setShowWinDialog(false);
   }, [puzzle.id, resetGame]);
 
   const checkSolution = useCallback(() => {
@@ -96,6 +100,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
     
     const newGuesses = {...userGuesses};
     
+    // If the guessed letter is already used for another encrypted letter, clear the old one
     for (const key in newGuesses) {
         if (newGuesses[key] === guess) {
             delete newGuesses[key];
@@ -162,18 +167,14 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   const renderHeaderActions = () => (
     <div className="flex items-center gap-2">
       <ThemeToggle />
-      {onNewGame && (
-         <>
-          <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
-            <Lightbulb className="h-5 w-5" />
-            <span className="sr-only">Hint</span>
-          </Button>
-          <Button onClick={resetGame} variant="ghost" size="icon">
-            <RotateCcw className="h-5 w-5" />
-            <span className="sr-only">Reset</span>
-          </Button>
-        </>
-      )}
+      <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
+        <Lightbulb className="h-5 w-5" />
+        <span className="sr-only">Hint</span>
+      </Button>
+      <Button onClick={resetGame} variant="ghost" size="icon">
+        <RotateCcw className="h-5 w-5" />
+        <span className="sr-only">Reset</span>
+      </Button>
     </div>
   );
 
@@ -182,9 +183,9 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
   return (
     <>
-      <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex flex-1 flex-col items-center p-4 gap-4 md:p-6 justify-between">
-        <div className="w-full max-w-4xl flex flex-col items-center">
+      <PageHeader title={`Level ${level}`} actions={renderHeaderActions()} />
+      <main className="flex flex-1 flex-col items-center p-4 md:p-6 justify-between">
+        <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-center">
           <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {
               if (ALPHABET.includes(char)) {
@@ -195,6 +196,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
                     className={cn(
                       "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
                       selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                      userGuesses[char] && solvedCipher[char] === userGuesses[char] ? "bg-green-500/10 border-green-500/50" : "",
                       animateCorrect === char ? 'correct-guess-animation' : ''
                     )}
                   >
@@ -218,16 +220,16 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-sm mx-auto p-2 rounded-lg">
-           <div className="grid grid-cols-7 gap-1.5 justify-items-center">
+        <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
+           <div className="grid grid-cols-6 gap-2 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
                 size="sm"
-                className="h-10 w-full p-0 text-sm font-bold"
+                className="h-9 w-full p-0 text-sm font-bold"
                 onClick={() => handleKeyboardInput(letter)}
-                disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
+                disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete}
               >
                 {letter}
               </Button>
@@ -238,36 +240,44 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
       {isClient && (
         <AlertDialog open={showWinDialog} onOpenChange={setShowWinDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader className="items-center text-center">
-               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 animate-pulse-success">
-                  <CheckCircle className="h-10 w-10 text-green-500" />
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader className="items-center text-center space-y-4">
+               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 animate-pulse-success">
+                  <PartyPopper className="h-12 w-12 text-green-500" />
               </div>
-              <AlertDialogTitle className="text-2xl">
-                Congratulations!
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                <div className="space-y-2">
-                  <p>You've successfully decoded the quote:</p>
-                  <blockquote className="border-l-2 border-primary pl-4 italic">
-                    "{puzzle.quote}"
-                  </blockquote>
-                   <p className="text-right text-sm text-muted-foreground/80 not-italic">
-                    &mdash; {puzzle.author}
-                  </p>
-                </div>
-              </AlertDialogDescription>
+              <div className="space-y-2">
+                <AlertDialogTitle className="text-3xl font-bold">
+                  Level Complete!
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  <div className="space-y-4 text-card-foreground dark:text-card-foreground">
+                    <p>You've successfully decoded the quote:</p>
+                    <blockquote className="border-l-4 border-primary bg-muted/50 p-4 rounded-r-lg italic">
+                      "{puzzle.quote}"
+                       <p className="text-right text-sm text-muted-foreground/80 not-italic mt-2">
+                          &mdash; {puzzle.author}
+                        </p>
+                    </blockquote>
+                  </div>
+                </AlertDialogDescription>
+              </div>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-               {onNewGame && (
-                <Button variant="secondary" onClick={() => { setShowWinDialog(false); onNewGame(); }}>
+            <AlertDialogFooter className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full mt-4">
+                <Button variant="outline" onClick={() => { if(onPlayAgain) onPlayAgain(); }}>
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  New Puzzle
+                  Play Again
                 </Button>
-              )}
-              <AlertDialogAction onClick={() => setShowWinDialog(false)}>
-                Continue
-              </AlertDialogAction>
+                 <Button variant="secondary" onClick={() => { if(onMainMenu) onMainMenu(); }}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Main Menu
+                </Button>
+                <Button 
+                  onClick={() => { if(onNextLevel) onNextLevel(); }}
+                  disabled={level >= 50}
+                >
+                  Next Level
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
