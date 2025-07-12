@@ -38,6 +38,7 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameComplete, onNextLevel, onPlayAgain, onMainMenu }: GameBoardProps) {
   const [userGuesses, setUserGuesses] = useState<Record<string, string>>({});
+  const [history, setHistory] = useState<Record<string, string>[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -91,6 +92,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
 
   const resetGame = useCallback((isInitialLoad = false) => {
     setUserGuesses({});
+    setHistory([]);
     setSelectedLetter(null);
     setIsComplete(false);
     setLives(3);
@@ -134,6 +136,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       }
     }
     setUserGuesses(newGuesses);
+    setHistory([newGuesses]);
     if (!isInitialLoad) {
         playSound('swoosh');
     }
@@ -187,6 +190,11 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     if (isComplete || showGameOverDialog) return;
     setSelectedLetter(letter);
   };
+  
+  const updateGuesses = (newGuesses: Record<string, string>) => {
+      setUserGuesses(newGuesses);
+      setHistory(prev => [...prev, newGuesses]);
+  }
 
   const handleKeyboardInput = (guess: string) => {
     if (!selectedLetter || isComplete || showGameOverDialog) return;
@@ -201,7 +209,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
           }
       }
       newGuesses[selectedLetter] = guess;
-      setUserGuesses(newGuesses);
+      updateGuesses(newGuesses);
       setAnimateCorrect(selectedLetter);
       setTimeout(() => setAnimateCorrect(null), 500);
       playSound('correct');
@@ -222,21 +230,21 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
      let success = false;
      let toastTitle = '';
      let toastDescription = '';
+     let newGuesses = { ...userGuesses };
 
      if (powerUpId === 'reveal_letter' || powerUpId === 'auto_fill') {
         const unsolvedLetters = puzzleEncryptedLetters.filter(
-          (encrypted) => !userGuesses[encrypted] || userGuesses[encrypted] !== solvedCipher[encrypted]
+          (encrypted) => userGuesses[encrypted] !== solvedCipher[encrypted]
         );
         if (unsolvedLetters.length > 0) {
             const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
             const decrypted = solvedCipher[encrypted];
             
-            const newGuesses = {...userGuesses};
             for (const key in newGuesses) {
                 if (newGuesses[key] === decrypted) delete newGuesses[key];
             }
             newGuesses[encrypted] = decrypted;
-            setUserGuesses(newGuesses);
+            updateGuesses(newGuesses);
             
             success = true;
             toastTitle = 'Letter Revealed!';
@@ -245,14 +253,49 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
      } else if (powerUpId === 'remove_wrong') {
         const wrongGuesses = Object.entries(userGuesses).filter(([enc, dec]) => solvedCipher[enc] !== dec);
         if (wrongGuesses.length > 0) {
-            const newGuesses = { ...userGuesses };
-            for (let i = 0; i < Math.min(3, wrongGuesses.length); i++) {
-                delete newGuesses[wrongGuesses[i][0]];
-            }
-            setUserGuesses(newGuesses);
+            const toRemove = wrongGuesses.slice(0, 3);
+            toRemove.forEach(([enc]) => {
+                delete newGuesses[enc];
+            });
+            updateGuesses(newGuesses);
             success = true;
             toastTitle = 'Wrong Guesses Removed!';
             toastDescription = `Up to 3 incorrect guesses cleared.`;
+        }
+     } else if (powerUpId === 'show_word') {
+        const unsolvedWords = puzzle.text.split(' ').filter(word => {
+            return word.split('').some(char => ALPHABET.includes(char) && userGuesses[char] !== solvedCipher[char]);
+        });
+        if (unsolvedWords.length > 0) {
+            const wordToShow = unsolvedWords[Math.floor(Math.random() * unsolvedWords.length)];
+            wordToShow.split('').forEach(char => {
+                if (ALPHABET.includes(char)) {
+                    newGuesses[char] = solvedCipher[char];
+                }
+            });
+            updateGuesses(newGuesses);
+            success = true;
+            toastTitle = 'Word Revealed!';
+            toastDescription = `A word has been filled in for you.`;
+        }
+     } else if (powerUpId === 'solve_puzzle') {
+        const solvedGuesses: Record<string, string> = {};
+        puzzleEncryptedLetters.forEach(char => {
+            solvedGuesses[char] = solvedCipher[char];
+        });
+        updateGuesses(solvedGuesses);
+        success = true;
+        toastTitle = 'Puzzle Solved!';
+        toastDescription = 'The puzzle has been completed for you.';
+     } else if (powerUpId === 'undo_move') {
+        if (history.length > 1) {
+            const prevHistory = history.slice(0, -1);
+            const lastState = prevHistory[prevHistory.length - 1];
+            setHistory(prevHistory);
+            setUserGuesses(lastState); // Don't use updateGuesses to avoid adding to history again
+            success = true;
+            toastTitle = 'Undo Successful';
+            toastDescription = 'Your last move has been reverted.';
         }
      }
      
@@ -264,7 +307,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         toast({ title: toastTitle, description: toastDescription });
      } else {
         playSound('error');
-        toast({ variant: 'destructive', title: 'Cannot Use Power-Up', description: 'No eligible letters to apply this power-up.' });
+        toast({ variant: 'destructive', title: 'Cannot Use Power-Up', description: 'No eligible letters or actions for this power-up.' });
      }
   }
 
@@ -316,6 +359,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                         className={cn(
                           "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
                           selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                          userGuesses[char] && !isCorrect ? "border-destructive" : "",
                           isCorrect ? "bg-green-500/10 border-green-500/50" : "",
                           errorLetter === char ? 'shake-error' : '',
                           animateCorrect === char ? 'correct-guess-animation' : ''

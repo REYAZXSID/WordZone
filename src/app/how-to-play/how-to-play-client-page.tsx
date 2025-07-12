@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/accordion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Brain, Lightbulb, Target, Trash2, FileText, TimerOff, Gem, Undo2, Sparkles, Package, ArrowRight, Eye } from 'lucide-react';
+import { Brain, Lightbulb, Target, Trash2, FileText, Undo2, Sparkles, Package, ArrowRight, Eye } from 'lucide-react';
 import Link from "next/link";
 import React from "react";
 
@@ -18,10 +18,8 @@ const powerUps = [
   { id: 'auto_fill', name: 'Auto-Fill Letter', description: 'Fills all instances of one correct letter.', icon: <Target className="h-5 w-5 text-blue-500" /> },
   { id: 'remove_wrong', name: 'Remove Wrong Guesses', description: 'Removes three of your incorrect guesses.', icon: <Trash2 className="h-5 w-5 text-red-500" /> },
   { id: 'show_word', name: 'Show Word Hint', description: 'Reveals one complete word in the puzzle.', icon: <FileText className="h-5 w-5 text-indigo-500" /> },
-  { id: 'freeze_timer', name: 'Freeze Timer', description: 'Pauses the timer for 30 seconds (in timed modes).', icon: <TimerOff className="h-5 w-5 text-cyan-500" /> },
-  { id: 'double_coins', name: 'Double Coins', description: 'Doubles the coin rewards for the next 3 puzzles.', icon: <Gem className="h-5 w-5 text-green-500" /> },
   { id: 'undo_move', name: 'Undo Last Move', description: 'Reverts your last letter guess.', icon: <Undo2 className="h-5 w-5 text-gray-500" /> },
-  { id: 'solve_puzzle', name: 'Solve Puzzle', description: 'Instantly solves the current puzzle.', cost: 150, icon: <Sparkles className="h-5 w-5 text-purple-500" /> },
+  { id: 'solve_puzzle', name: 'Solve Puzzle', description: 'Instantly solves the current puzzle.', icon: <Sparkles className="h-5 w-5 text-purple-500" /> },
   { id: 'hint_pack', name: 'Hint Pack', description: 'Bundle: 3 Reveal Letters + 1 Word Hint.', icon: <Package className="h-5 w-5 text-orange-500" /> },
 ];
 
