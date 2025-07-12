@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame, Inbox } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -22,6 +22,12 @@ const menuItems: MenuItem[] = [
     description: 'Complete daily tasks for rewards.',
     href: '/missions',
     icon: <ListChecks className="h-8 w-8 text-purple-500" />,
+  },
+    {
+    name: 'Inbox & Rewards',
+    description: 'Claim your daily rewards and gifts.',
+    href: '/inbox',
+    icon: <Inbox className="h-8 w-8 text-rose-500" />,
   },
   {
     name: 'Streak Tracker',
