@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Puzzle, Settings, Calendar, Menu, ArrowRight } from 'lucide-react';
+import { Puzzle, Menu, ArrowRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col bg-background overflow-hidden">
       
-      {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary/30 rounded-full filter blur-3xl opacity-50 glow-effect-1"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-accent/30 rounded-full filter blur-3xl opacity-50 glow-effect-2"></div>
@@ -50,8 +50,28 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="pb-6 text-center text-sm text-muted-foreground z-10">
-        <p>&copy; {new Date().getFullYear()} CryptoPuzzle. All Rights Reserved.</p>
+      <footer className="w-full p-6 z-10">
+        <div className="mx-auto max-w-lg">
+            <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+            <a 
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 flex items-center justify-center gap-4 group"
+            >
+                <Image 
+                    src="https://placehold.co/100x100.png"
+                    data-ai-hint="portrait man"
+                    alt="Sid"
+                    width={40}
+                    height={40}
+                    className="rounded-full border-2 border-primary/50 transition-transform duration-300 group-hover:scale-110"
+                />
+                <span className="font-semibold text-foreground/80 transition-colors duration-300 group-hover:text-primary">
+                    Built by Sid
+                </span>
+            </a>
+        </div>
       </footer>
     </div>
   );
