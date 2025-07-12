@@ -43,14 +43,21 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const giveInitialHint = useCallback(() => {
     const allEncryptedLetters = Object.keys(solvedCipher);
     if (allEncryptedLetters.length > 0) {
-      const randomEncryptedLetter = allEncryptedLetters[Math.floor(Math.random() * allEncryptedLetters.length)];
-      const decryptedLetter = solvedCipher[randomEncryptedLetter];
-      setUserGuesses({ [randomEncryptedLetter]: decryptedLetter });
+      const shuffledLetters = [...allEncryptedLetters].sort(() => 0.5 - Math.random());
+      const numberOfHints = Math.min(3, shuffledLetters.length);
+      const newGuesses: Record<string, string> = {};
+      
+      for(let i = 0; i < numberOfHints; i++) {
+        const encryptedLetter = shuffledLetters[i];
+        const decryptedLetter = solvedCipher[encryptedLetter];
+        newGuesses[encryptedLetter] = decryptedLetter;
+      }
+      setUserGuesses(newGuesses);
     }
   }, [solvedCipher]);
 
   useEffect(() => {
-    // Give one hint when a new puzzle loads
+    // Give hints when a new puzzle loads
     giveInitialHint();
   }, [puzzle.id, giveInitialHint]);
 
@@ -143,7 +150,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const handleReset = () => {
     setSelectedLetter(null);
     setIsComplete(false);
-    giveInitialHint(); // Reset to initial state with one hint
+    giveInitialHint(); // Reset to initial state with hints
   };
 
   const usedLetters = Object.values(userGuesses);
