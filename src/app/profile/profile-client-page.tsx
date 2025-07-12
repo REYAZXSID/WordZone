@@ -191,7 +191,10 @@ export function ProfileClientPage() {
                 />
               </div>
             ) : (
-              <CardTitle className="text-2xl">{profile.username}</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <span>{profile.username}</span>
+                <CheckCircle2 className="h-6 w-6 text-blue-500 fill-blue-100" />
+              </CardTitle>
             )}
             <CardDescription className="pt-1">{profile.userId}</CardDescription>
           </div>
