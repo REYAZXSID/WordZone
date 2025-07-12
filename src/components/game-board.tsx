@@ -185,7 +185,7 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
     <>
       <PageHeader title={`Level ${level}`} actions={renderHeaderActions()} />
       <main className="flex flex-1 flex-col items-center p-4 md:p-6 justify-between">
-        <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-center">
+        <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-start pt-4">
           <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {
               if (ALPHABET.includes(char)) {
