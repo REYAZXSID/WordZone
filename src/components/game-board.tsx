@@ -183,7 +183,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   return (
     <>
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex-1 flex flex-col items-center justify-between p-4 gap-4 md:p-6">
+      <main className="flex flex-1 flex-col items-center p-4 gap-4 md:p-6 justify-between">
         <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {

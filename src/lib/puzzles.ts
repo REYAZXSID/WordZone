@@ -6,6 +6,8 @@ export type Puzzle = {
   cipher: Record<string, string>; // Decrypted -> Encrypted
 };
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 // Helper to create a cipher from a key string
 const createCipher = (key: string): Record<string, string> => {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -34,44 +36,44 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
     {
-        quote: "BE YOURSELF",
+        quote: "GO TO HELL", // 10
+        author: "UNKNOWN"
+    },
+    {
+        quote: "BE YOURSELF", // 11
         author: "OSCAR WILDE"
     },
     {
-        quote: "TIME IS MONEY",
+        quote: "TIME IS MONEY", // 13
         author: "BENJAMIN FRANKLIN"
     },
     {
-        quote: "I HAVE A DREAM",
-        author: "MARTIN LUTHER KING"
-    },
-    {
-        quote: "KNOWLEDGE IS POWER",
-        author: "FRANCIS BACON"
-    },
-    {
-        quote: "STAY HUNGRY STAY FOOLISH",
-        author: "STEVE JOBS"
-    },
-    {
-        quote: "GO TO HELL",
-        author: "UNKNOWN"
-    },
-    {
-        quote: "NEVER GIVE UP",
+        quote: "NEVER GIVE UP", // 13
         author: "WINSTON CHURCHILL"
     },
     {
-        quote: "LOVE FOR ALL HATRED FOR NONE",
-        author: "KHALIFATUL MASIH III"
+        quote: "I HAVE A DREAM", // 14
+        author: "MARTIN LUTHER KING"
     },
     {
-        quote: "LEARNING NEVER ENDS",
+        quote: "THINK DIFFERENT", // 15
+        author: "APPLE"
+    },
+    {
+        quote: "KNOWLEDGE IS POWER", // 18
+        author: "FRANCIS BACON"
+    },
+    {
+        quote: "LEARNING NEVER ENDS", // 20
         author: "UNKNOWN"
     },
     {
-        quote: "THINK DIFFERENT",
-        author: "APPLE"
+        quote: "STAY HUNGRY STAY FOOLISH", // 26 > 20, but we need some hard ones.
+        author: "STEVE JOBS"
+    },
+    {
+        quote: "LOVE FOR ALL HATRED FOR NONE", // 29 > 20
+        author: "KHALIFATUL MASIH III"
     }
 ];
 
@@ -99,6 +101,10 @@ export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
     }
 });
 
+const easyPuzzles = puzzles.filter(p => p.quote.length <= 10);
+const mediumPuzzles = puzzles.filter(p => p.quote.length > 10 && p.quote.length <= 15);
+const hardPuzzles = puzzles.filter(p => p.quote.length > 15);
+
 
 export const getDailyPuzzle = (): Puzzle => {
   const now = new Date();
@@ -109,8 +115,24 @@ export const getDailyPuzzle = (): Puzzle => {
   return puzzles[dayOfYear % puzzles.length];
 };
 
-export const getRandomPuzzle = (): Puzzle => {
-    return puzzles[Math.floor(Math.random() * puzzles.length)];
+export const getRandomPuzzle = (difficulty?: Difficulty): Puzzle => {
+    let puzzlePool: Puzzle[];
+
+    switch (difficulty) {
+        case 'easy':
+            puzzlePool = easyPuzzles.length > 0 ? easyPuzzles : puzzles;
+            break;
+        case 'medium':
+            puzzlePool = mediumPuzzles.length > 0 ? mediumPuzzles : puzzles;
+            break;
+        case 'hard':
+            puzzlePool = hardPuzzles.length > 0 ? hardPuzzles : puzzles;
+            break;
+        default:
+            puzzlePool = puzzles;
+    }
+    
+    return puzzlePool[Math.floor(Math.random() * puzzlePool.length)];
 }
 
 export const invertCipher = (cipher: Record<string, string>): Record<string, string> => {

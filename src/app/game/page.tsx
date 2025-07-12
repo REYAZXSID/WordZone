@@ -1,23 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { GameBoard } from '@/components/game-board';
-import { PageHeader } from '@/components/page-header';
-import { getRandomPuzzle } from '@/lib/puzzles';
-import type { Puzzle } from '@/lib/puzzles';
-import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
+import { Suspense } from 'react';
+import { GameScreen } from '@/components/game-screen';
 
 export default function GamePage() {
-  const [puzzle, setPuzzle] = useState(getRandomPuzzle());
-
-  const handleNewGame = () => {
-    setPuzzle(getRandomPuzzle());
-  }
-
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <GameBoard puzzle={puzzle} onNewGame={handleNewGame} />
-    </div>
+    <Suspense fallback={<div className="flex min-h-screen flex-col items-center justify-center bg-background"><p>Loading puzzle...</p></div>}>
+      <GameScreen />
+    </Suspense>
   );
 }

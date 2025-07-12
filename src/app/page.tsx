@@ -18,7 +18,7 @@ export default function Home() {
         </CardHeader>
         <CardContent className="flex flex-col space-y-4 p-6">
           <Button asChild size="lg" className="h-14 text-lg">
-            <Link href="/game">
+            <Link href="/game/category">
               <Puzzle className="mr-2 h-5 w-5" />
               Start Game
             </Link>
