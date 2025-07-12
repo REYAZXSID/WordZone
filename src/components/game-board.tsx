@@ -109,7 +109,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       }
     }
     setUserGuesses(newGuesses);
-    playSound('swoosh');
+    if (!isInitialLoad) {
+        playSound('swoosh');
+    }
   }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge, playSound, puzzle.difficulty]);
 
   useEffect(() => {
@@ -235,10 +237,6 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         <Lightbulb className="h-5 w-5" />
         <span className="sr-only">Hint</span>
       </Button>
-      <Button onClick={() => resetGame(false)} variant="ghost" size="icon">
-        <RotateCcw className="h-5 w-5" />
-        <span className="sr-only">Reset</span>
-      </Button>
     </div>
   );
 
@@ -290,13 +288,13 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         </div>
 
         <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
-           <div className="grid grid-cols-6 gap-2 justify-items-center">
+           <div className="grid grid-cols-7 gap-1.5 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
                 size="sm"
-                className="h-9 w-full p-0 text-sm font-bold"
+                className="h-10 w-full p-0 text-sm font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete}
               >
