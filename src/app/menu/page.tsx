@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame, Inbox } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame, Inbox, MessageSquareWarning } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -70,6 +70,12 @@ const menuItems: MenuItem[] = [
     description: 'View your stats and progress.',
     href: '/profile',
     icon: <User className="h-8 w-8 text-primary" />,
+  },
+   {
+    name: 'Feedback & Report',
+    description: 'Send suggestions or report bugs.',
+    href: '/feedback',
+    icon: <MessageSquareWarning className="h-8 w-8 text-gray-500" />,
   },
 ];
 
