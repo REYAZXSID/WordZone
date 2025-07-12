@@ -183,7 +183,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   return (
     <>
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-8 md:p-6">
+      <main className="flex-1 flex flex-col items-center justify-between p-4 gap-4 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="flex flex-wrap justify-center gap-x-3 gap-y-4">
             {puzzle.text.split(' ').map((word, wordIndex) => (
@@ -219,14 +219,14 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-md mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
-           <div className="grid grid-cols-7 gap-2 justify-items-center">
+        <div className="w-full max-w-sm mx-auto p-2 rounded-lg">
+           <div className="grid grid-cols-7 gap-1.5 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
                 size="lg"
-                className="h-14 w-14 p-0 text-base font-bold"
+                className="h-12 w-full p-0 text-sm font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
               >
