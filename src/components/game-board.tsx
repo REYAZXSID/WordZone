@@ -178,8 +178,8 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   return (
     <>
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex-1 flex flex-col items-center p-4 gap-4 md:p-6">
-        <div className="flex-1 w-full max-w-4xl flex flex-col items-center justify-start pt-8">
+      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-4 md:p-6">
+        <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="w-full text-center mb-4">
              <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
           </div>
