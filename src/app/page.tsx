@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Puzzle, Menu, ArrowRight, Settings, BookOpen, User } from 'lucide-react';
+import { Menu, ArrowRight, Settings, BookOpen, User, Puzzle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -47,13 +47,13 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild size="lg" className="h-14 text-lg" variant="secondary">
+            <Button asChild size="lg" className="h-14 text-lg" variant="outline">
               <Link href="/how-to-play">
                 <BookOpen className="mr-2 h-5 w-5" />
                 How to Play
               </Link>
             </Button>
-            <Button asChild size="lg" className="h-14 text-lg" variant="secondary">
+            <Button asChild size="lg" className="h-14 text-lg" variant="outline">
               <Link href="/settings">
                 <Settings className="mr-2 h-5 w-5" />
                 Settings
