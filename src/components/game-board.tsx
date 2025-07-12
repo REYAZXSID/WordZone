@@ -6,7 +6,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart, Settings } from 'lucide-react';
+import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart, Settings, Heart, Frown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -50,6 +50,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [coinsEarned, setCoinsEarned] = useState(0);
   const playSound = useSound();
   const [powerUpInventory, setPowerUpInventory] = useState<Record<string, number>>({});
+  const [lives, setLives] = useState(3);
+  const [errorLetter, setErrorLetter] = useState<string | null>(null);
+  const [showGameOverDialog, setShowGameOverDialog] = useState(false);
 
   const updateCoins = useCallback(() => {
     const savedCoins = localStorage.getItem('crypto_coins');
@@ -90,6 +93,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setUserGuesses({});
     setSelectedLetter(null);
     setIsComplete(false);
+    setLives(3);
+    setShowGameOverDialog(false);
+
     if (isInitialLoad) {
       setStartTime(Date.now());
     }
@@ -138,6 +144,12 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setShowWinDialog(false);
   }, [puzzle.id, resetGame]);
 
+  useEffect(() => {
+      if (lives <= 0 && !isComplete) {
+          setShowGameOverDialog(true);
+      }
+  }, [lives, isComplete]);
+
   const handleGameCompletion = useCallback(() => {
     if (isComplete || !startTime) return;
 
@@ -172,33 +184,34 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
 
 
   const handleLetterSelect = (letter: string) => {
-    if (isComplete) return;
+    if (isComplete || showGameOverDialog) return;
     setSelectedLetter(letter);
   };
 
   const handleKeyboardInput = (guess: string) => {
-    if (!selectedLetter || isComplete) return;
+    if (!selectedLetter || isComplete || showGameOverDialog) return;
     
-    const newGuesses = {...userGuesses};
-    
-    // If the guessed letter is already used for another encrypted letter, clear the old one
-    for (const key in newGuesses) {
-        if (newGuesses[key] === guess) {
-            delete newGuesses[key];
-        }
-    }
+    const isCorrectGuess = solvedCipher[selectedLetter] === guess;
 
-    newGuesses[selectedLetter] = guess;
-    setUserGuesses(newGuesses);
-
-    if (newGuesses[selectedLetter] === solvedCipher[selectedLetter]) {
+    if (isCorrectGuess) {
+      const newGuesses = {...userGuesses};
+      for (const key in newGuesses) {
+          if (newGuesses[key] === guess) {
+              delete newGuesses[key];
+          }
+      }
+      newGuesses[selectedLetter] = guess;
+      setUserGuesses(newGuesses);
       setAnimateCorrect(selectedLetter);
       setTimeout(() => setAnimateCorrect(null), 500);
       playSound('correct');
     } else {
+      setLives(prev => Math.max(0, prev - 1));
+      setErrorLetter(selectedLetter);
+      setTimeout(() => setErrorLetter(null), 500);
       playSound('error');
     }
-
+    
     setSelectedLetter(null);
   };
   
@@ -256,7 +269,18 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   }
 
   const renderHeaderActions = () => (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Heart
+            key={i}
+            className={cn(
+              "h-6 w-6 transition-all",
+              i < lives ? "text-red-500 fill-red-500" : "text-muted-foreground/50"
+            )}
+          />
+        ))}
+      </div>
       <Button asChild variant="ghost" size="icon">
         <Link href="/shop">
           <ShoppingCart className="h-5 w-5" />
@@ -285,7 +309,6 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                 {word.split('').map((char, charIndex) => {
                   if (ALPHABET.includes(char)) {
                     const isCorrect = userGuesses[char] && solvedCipher[char] === userGuesses[char];
-                    const isIncorrect = userGuesses[char] && solvedCipher[char] !== userGuesses[char];
                     return (
                       <div
                         key={`${char}-${wordIndex}-${charIndex}`}
@@ -294,7 +317,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                           "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
                           selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
                           isCorrect ? "bg-green-500/10 border-green-500/50" : "",
-                          isIncorrect ? "border-destructive" : "",
+                          errorLetter === char ? 'shake-error' : '',
                           animateCorrect === char ? 'correct-guess-animation' : ''
                         )}
                       >
@@ -321,7 +344,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
             <PowerUpBar
                 inventory={powerUpInventory}
                 onUsePowerUp={handleUsePowerUp}
-                disabled={isComplete}
+                disabled={isComplete || showGameOverDialog}
             />
 
             <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
@@ -333,7 +356,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                     size="sm"
                     className="h-10 w-full p-0 text-sm font-bold"
                     onClick={() => handleKeyboardInput(letter)}
-                    disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete}
+                    disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete || showGameOverDialog}
                   >
                     {letter}
                   </Button>
@@ -344,58 +367,86 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       </main>
 
       {isClient && (
-        <AlertDialog open={showWinDialog} onOpenChange={setShowWinDialog}>
-          <AlertDialogContent className="max-w-md">
-            <AlertDialogHeader className="items-center text-center space-y-4">
-               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 animate-pulse-success">
-                  <PartyPopper className="h-12 w-12 text-green-500" />
-              </div>
-              <div className="space-y-2">
-                <AlertDialogTitle className="text-3xl font-bold">
-                  {isDailyChallenge ? 'Challenge Complete!' : 'Level Complete!'}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  <div className="space-y-4 text-card-foreground dark:text-card-foreground">
-                    {coinsEarned > 0 && (
-                      <div className="flex items-center justify-center gap-2 text-lg font-semibold text-yellow-500">
-                        <Coins className="h-6 w-6" />
-                        <span>+{coinsEarned} Coins Earned!</span>
-                      </div>
-                    )}
-                    <p>You've successfully decoded the quote:</p>
-                    <blockquote className="border-l-4 border-primary bg-muted/50 p-4 rounded-r-lg italic">
-                      "{puzzle.quote}"
-                       <p className="text-right text-sm text-muted-foreground/80 not-italic mt-2">
-                          &mdash; {puzzle.author}
-                        </p>
-                    </blockquote>
-                  </div>
-                </AlertDialogDescription>
-              </div>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
-                <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={() => { if(onPlayAgain) onPlayAgain(); }}>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Play Again
-                    </Button>
-                    {!isDailyChallenge && (
-                      <Button 
-                        onClick={() => { if(onNextLevel) onNextLevel(); }}
-                        disabled={level && level >= 50}
-                      >
-                        Next Level
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    )}
+        <>
+          <AlertDialog open={showWinDialog} onOpenChange={setShowWinDialog}>
+            <AlertDialogContent className="max-w-md">
+              <AlertDialogHeader className="items-center text-center space-y-4">
+                 <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 animate-pulse-success">
+                    <PartyPopper className="h-12 w-12 text-green-500" />
                 </div>
-                 <Button variant="secondary" onClick={() => { if(onMainMenu) onMainMenu(); }} className="w-full">
-                  <Home className="mr-2 h-4 w-4" />
-                  Main Menu
-                </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
+                <div className="space-y-2">
+                  <AlertDialogTitle className="text-3xl font-bold">
+                    {isDailyChallenge ? 'Challenge Complete!' : 'Level Complete!'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    <div className="space-y-4 text-card-foreground dark:text-card-foreground">
+                      {coinsEarned > 0 && (
+                        <div className="flex items-center justify-center gap-2 text-lg font-semibold text-yellow-500">
+                          <Coins className="h-6 w-6" />
+                          <span>+{coinsEarned} Coins Earned!</span>
+                        </div>
+                      )}
+                      <p>You've successfully decoded the quote:</p>
+                      <blockquote className="border-l-4 border-primary bg-muted/50 p-4 rounded-r-lg italic">
+                        "{puzzle.quote}"
+                         <p className="text-right text-sm text-muted-foreground/80 not-italic mt-2">
+                            &mdash; {puzzle.author}
+                          </p>
+                      </blockquote>
+                    </div>
+                  </AlertDialogDescription>
+                </div>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
+                  <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" onClick={() => { if(onPlayAgain) { resetGame(); onPlayAgain(); } }}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Play Again
+                      </Button>
+                      {!isDailyChallenge && (
+                        <Button 
+                          onClick={() => { if(onNextLevel) onNextLevel(); }}
+                          disabled={level && level >= 50}
+                        >
+                          Next Level
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      )}
+                  </div>
+                   <Button variant="secondary" onClick={() => { if(onMainMenu) onMainMenu(); }} className="w-full">
+                    <Home className="mr-2 h-4 w-4" />
+                    Main Menu
+                  </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+          <AlertDialog open={showGameOverDialog} onOpenChange={setShowGameOverDialog}>
+            <AlertDialogContent className="max-w-md">
+                <AlertDialogHeader className="items-center text-center space-y-4">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 dark:bg-destructive/20 animate-pulse">
+                        <Frown className="h-12 w-12 text-destructive" />
+                    </div>
+                    <div className="space-y-2">
+                        <AlertDialogTitle className="text-3xl font-bold">Game Over</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base">
+                            You've run out of lives. Better luck next time!
+                        </AlertDialogDescription>
+                    </div>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
+                    <Button variant="outline" onClick={() => { resetGame(); playSound('swoosh'); }}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Play Again
+                    </Button>
+                    <Button variant="secondary" onClick={() => { if (onMainMenu) onMainMenu(); }}>
+                        <Home className="mr-2 h-4 w-4" />
+                        Main Menu
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
         </AlertDialog>
+        </>
       )}
     </>
   );
