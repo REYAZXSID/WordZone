@@ -44,7 +44,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
   const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap).filter(l => puzzle.text.includes(l)), [letterToNumberMap, puzzle.text]);
-  const words = useMemo(() => puzzle.text.split(' '), [puzzle.text]);
 
   const resetGame = useCallback(() => {
     setUserGuesses({});
@@ -184,36 +183,35 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           <div className="w-full text-center mb-4">
              <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
-            {words.map((word, wordIndex) => (
-                <div key={wordIndex} className="flex flex-wrap justify-center gap-x-1 gap-y-1 mr-2">
-                    {word.split('').map((char, charIndex) => {
-                         if (ALPHABET.includes(char)) {
-                            return (
-                              <div
-                                key={`${char}-${wordIndex}-${charIndex}`}
-                                onClick={() => handleLetterSelect(char)}
-                                className={cn(
-                                  "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
-                                  animateCorrect === char ? 'correct-guess-animation' : ''
-                                )}
-                              >
-                                <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
-                                <div className="text-2xl font-bold text-foreground pb-1">
-                                  {userGuesses[char] || ''}
-                                </div>
-                              </div>
-                            );
-                          }
-                          return (
-                             <div key={`char-${wordIndex}-${charIndex}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
-                                {char}
-                             </div>
-                          );
-                    })}
-                </div>
-            ))}
+          <div className="flex flex-wrap justify-center gap-1">
+            {puzzle.text.split('').map((char, index) => {
+              if (ALPHABET.includes(char)) {
+                return (
+                  <div
+                    key={`${char}-${index}`}
+                    onClick={() => handleLetterSelect(char)}
+                    className={cn(
+                      "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
+                      selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                      animateCorrect === char ? 'correct-guess-animation' : ''
+                    )}
+                  >
+                    <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
+                    <div className="text-2xl font-bold text-foreground pb-1">
+                      {userGuesses[char] || ''}
+                    </div>
+                  </div>
+                );
+              }
+              if (char === ' ') {
+                 return <div key={`space-${index}`} className="w-4 h-16" />;
+              }
+              return (
+                 <div key={`char-${index}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
+                    {char}
+                 </div>
+              );
+            })}
           </div>
         </div>
 
