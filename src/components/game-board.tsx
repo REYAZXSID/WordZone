@@ -5,8 +5,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Lightbulb, RotateCcw, CheckCircle } from 'lucide-react';
+import { Lightbulb, RotateCcw, CheckCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -17,16 +16,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { PageHeader } from './page-header';
 
 type GameBoardProps = {
   puzzle: Puzzle;
   onGameComplete?: () => void;
+  onNewGame?: () => void;
 };
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
+export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps) {
   const [userGuesses, setUserGuesses] = useState<Record<string, string>>({});
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -34,14 +35,21 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const [isClient, setIsClient] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showWinDialog, setShowWinDialog] = useState(false);
+  const [animateCorrect, setAnimateCorrect] = useState<string | null>(null);
 
   useEffect(() => setIsClient(true), []);
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
   const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap), [letterToNumberMap]);
+  const words = useMemo(() => puzzle.text.split(' '), [puzzle.text]);
 
-  const giveInitialHints = useCallback(() => {
+  const resetGame = useCallback(() => {
+    setUserGuesses({});
+    setSelectedLetter(null);
+    setIsComplete(false);
+    
+    // Give initial hints
     const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
     const numberOfHints = Math.min(3, shuffledLetters.length);
     const newGuesses: Record<string, string> = {};
@@ -49,15 +57,16 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
     for(let i = 0; i < numberOfHints; i++) {
       const encryptedLetter = shuffledLetters[i];
       const decryptedLetter = solvedCipher[encryptedLetter];
-      newGuesses[encryptedLetter] = decryptedLetter;
+      if (decryptedLetter) {
+        newGuesses[encryptedLetter] = decryptedLetter;
+      }
     }
     setUserGuesses(newGuesses);
   }, [puzzleEncryptedLetters, solvedCipher]);
 
   useEffect(() => {
-    // Give hints when a new puzzle loads
-    giveInitialHints();
-  }, [puzzle.id, giveInitialHints]);
+    resetGame();
+  }, [puzzle.id, resetGame]);
 
   const checkSolution = useCallback(() => {
     if (isComplete) return;
@@ -71,7 +80,6 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   }, [userGuesses, onGameComplete, solvedCipher, puzzleEncryptedLetters, isComplete]);
 
   useEffect(() => {
-    // Only check if all letters have a guess
     if (Object.keys(userGuesses).length === puzzleEncryptedLetters.length) {
       checkSolution();
     }
@@ -87,7 +95,6 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
     
     const newGuesses = {...userGuesses};
     
-    // Clear previous use of this letter if any
     for (const key in newGuesses) {
         if (newGuesses[key] === guess) {
             delete newGuesses[key];
@@ -96,6 +103,13 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
 
     newGuesses[selectedLetter] = guess;
     setUserGuesses(newGuesses);
+
+    if (newGuesses[selectedLetter] === solvedCipher[selectedLetter]) {
+      setAnimateCorrect(selectedLetter);
+      setTimeout(() => setAnimateCorrect(null), 500);
+    }
+
+    setSelectedLetter(null);
   };
 
   const handleHint = () => {
@@ -121,7 +135,6 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
         const decrypted = result.decryptedLetter;
         
         const newGuesses = {...userGuesses};
-        // Clear previous assignment of this decrypted letter
         for (const key in newGuesses) {
             if (newGuesses[key] === decrypted) {
                 delete newGuesses[key];
@@ -145,62 +158,67 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
     });
   };
 
-  const handleReset = () => {
-    setSelectedLetter(null);
-    setIsComplete(false);
-    giveInitialHints(); // Reset to initial state with hints
-  };
-
   const usedLetters = Object.values(userGuesses);
   const letterIsCorrect = (letter: string) => {
     return userGuesses[letter] === solvedCipher[letter];
   }
 
+  const renderHeaderActions = () => (
+     <>
+        <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
+          <Lightbulb className="h-5 w-5" />
+          <span className="sr-only">Hint</span>
+        </Button>
+        <Button onClick={resetGame} variant="ghost" size="icon">
+          <RotateCcw className="h-5 w-5" />
+          <span className="sr-only">Reset</span>
+        </Button>
+      </>
+  );
+
   return (
-    <div className="flex flex-col items-center gap-6 p-4 md:p-6">
-      <Card className="w-full max-w-4xl">
-        <CardHeader>
-          <CardTitle className="text-center text-xl md:text-2xl">Decode the Quote</CardTitle>
-          <CardDescription className="text-center">
-            By {puzzle.author}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
-            {puzzle.text.split('').map((char, index) => {
-              if (ALPHABET.includes(char)) {
-                return (
-                  <div
-                    key={`${char}-${index}`}
-                    onClick={() => handleLetterSelect(char)}
-                    className={cn(
-                      "flex h-16 w-12 cursor-pointer flex-col items-center justify-center rounded-md border-2 bg-card font-mono text-xl transition-all",
-                      selectedLetter === char ? "border-primary shadow-lg" : "border-input",
-                      userGuesses[char] && letterIsCorrect(char) ? 'bg-green-500/20' : '',
-                       isComplete && letterIsCorrect(char) ? 'correct-guess-animation' : ''
-                    )}
-                  >
-                    <div className="text-muted-foreground text-sm">{letterToNumberMap[char]}</div>
-                    <div className="text-2xl font-bold text-foreground">
-                      {userGuesses[char] || ''}
-                    </div>
-                  </div>
-                );
-              }
-              if (char === ' ') {
-                 return <div key={`space-${index}`} className="w-4 flex-shrink-0" />;
-              }
-              return (
-                 <div key={`char-${index}`} className="flex h-16 w-8 items-end justify-center pb-1 text-2xl font-bold">
-                    {char}
-                 </div>
-              );
-            })}
+    <>
+      <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
+      <main className="flex-1 flex flex-col items-center p-4 gap-4 md:p-6">
+        <div className="flex-1 w-full max-w-4xl flex flex-col items-center">
+          <div className="w-full text-center mb-4">
+             <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
           </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-4">
-           <div className="text-sm text-muted-foreground">Click a box above, then a letter below to guess.</div>
-          <div className="grid grid-cols-7 gap-2 md:grid-cols-13 md:gap-2">
+          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
+            {words.map((word, wordIndex) => (
+                <div key={wordIndex} className="flex flex-wrap justify-center gap-x-1 gap-y-1 mr-2">
+                    {word.split('').map((char, charIndex) => {
+                         if (ALPHABET.includes(char)) {
+                            return (
+                              <div
+                                key={`${char}-${wordIndex}-${charIndex}`}
+                                onClick={() => handleLetterSelect(char)}
+                                className={cn(
+                                  "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
+                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-transparent",
+                                   animateCorrect === char ? 'correct-guess-animation' : ''
+                                )}
+                              >
+                                <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
+                                <div className="text-2xl font-bold text-foreground pb-1">
+                                  {userGuesses[char] || ''}
+                                </div>
+                              </div>
+                            );
+                          }
+                          return (
+                             <div key={`char-${wordIndex}-${charIndex}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
+                                {char}
+                             </div>
+                          );
+                    })}
+                </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="w-full max-w-xl p-2 rounded-lg bg-card/50">
+           <div className="grid grid-cols-7 gap-1 md:grid-cols-13 md:gap-2">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
@@ -214,18 +232,9 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
               </Button>
             ))}
           </div>
-          <div className="flex w-full justify-center gap-4 pt-4">
-            <Button onClick={handleHint} disabled={isPending || isComplete} variant="secondary">
-              <Lightbulb className="mr-2 h-4 w-4" />
-              {isPending ? 'Getting Hint...' : 'Hint'}
-            </Button>
-            <Button onClick={handleReset} variant="destructive">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </main>
+
       {isClient && (
         <AlertDialog open={showWinDialog} onOpenChange={setShowWinDialog}>
           <AlertDialogContent>
@@ -242,6 +251,12 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
+               {onNewGame && (
+                <Button variant="secondary" onClick={() => { setShowWinDialog(false); onNewGame(); }}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  New Puzzle
+                </Button>
+              )}
               <AlertDialogAction onClick={() => setShowWinDialog(false)}>
                 Continue
               </AlertDialogAction>
@@ -249,6 +264,6 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
           </AlertDialogContent>
         </AlertDialog>
       )}
-    </div>
+    </>
   );
 }

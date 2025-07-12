@@ -75,7 +75,7 @@ body {
 
 @keyframes correct-guess {
   0% { transform: scale(1); background-color: hsl(var(--card)); }
-  50% { transform: scale(1.1); background-color: hsl(var(--accent)); }
+  50% { transform: scale(1.1); background-color: hsl(124, 38%, 75%, 0.5); }
   100% { transform: scale(1); background-color: hsl(var(--card)); }
 }
 

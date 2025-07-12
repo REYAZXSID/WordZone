@@ -1,7 +1,6 @@
 'use client';
 
 import { GameBoard } from '@/components/game-board';
-import { PageHeader } from '@/components/page-header';
 import { getDailyPuzzle } from '@/lib/puzzles';
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,7 +38,7 @@ export default function DailyPage() {
     const timerInterval = setInterval(() => {
       const now = new Date();
       const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setDate(now.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
       const diff = tomorrow.getTime() - now.getTime();
       
@@ -68,9 +67,8 @@ export default function DailyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageHeader title="Daily Puzzle" />
-      <main>
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="w-full">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 p-4 md:flex-row md:justify-center md:p-6">
           <Card className="w-full md:w-auto">
             <CardContent className="flex items-center gap-4 p-4">
@@ -96,7 +94,7 @@ export default function DailyPage() {
           </Card>
         </div>
         <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} />
-      </main>
+      </div>
     </div>
   );
 }
