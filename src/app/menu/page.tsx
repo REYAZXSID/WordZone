@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame, Inbox, MessageSquareWarning } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame, Inbox, MessageSquareWarning, Settings } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -77,6 +77,12 @@ const menuItems: MenuItem[] = [
     href: '/feedback',
     icon: <MessageSquareWarning className="h-8 w-8 text-gray-500" />,
   },
+  {
+    name: 'Settings',
+    description: 'Adjust theme, sounds, and preferences.',
+    href: '/settings',
+    icon: <Settings className="h-8 w-8 text-slate-500" />,
+  }
 ];
 
 export default function MenuPage() {
