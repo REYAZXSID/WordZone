@@ -1,5 +1,6 @@
+
 import { Button } from '@/components/ui/button';
-import { Puzzle, Menu, ArrowRight, Calendar, User, Settings } from 'lucide-react';
+import { Puzzle, Menu, ArrowRight, Settings, BookOpen, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -47,9 +48,9 @@ export default function Home() {
               </Link>
             </Button>
             <Button asChild size="lg" className="h-14 text-lg" variant="secondary">
-              <Link href="/daily">
-                <Calendar className="mr-2 h-5 w-5" />
-                Daily Puzzle
+              <Link href="/how-to-play">
+                <BookOpen className="mr-2 h-5 w-5" />
+                How to Play
               </Link>
             </Button>
             <Button asChild size="lg" className="h-14 text-lg" variant="secondary">
