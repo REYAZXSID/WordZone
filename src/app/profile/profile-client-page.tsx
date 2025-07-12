@@ -1,115 +1,92 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, Puzzle, Flame, Lightbulb, Pencil, CheckCircle2, Medal } from 'lucide-react';
+import { Coins, Puzzle, Flame, Lightbulb, LogOut, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { initialAchievements, type Achievement } from '../achievements/achievements-client-page';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
-
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/input';
 
 type UserProfile = {
   username: string;
-  userId: string;
+  email: string;
   avatar: string;
 };
 
 type UserStats = {
   puzzlesSolved: number;
-  fastestTime: string; // "N/A" or formatted time
+  fastestTime: string;
   dailyStreak: number;
   hintsUsed: number;
-};
-
-const TIER_COLORS = {
-  bronze: 'text-orange-600',
-  silver: 'text-gray-400',
-  gold: 'text-yellow-500',
+  coins: number;
 };
 
 export function ProfileClientPage() {
   const [isClient, setIsClient] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [coins, setCoins] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempUsername, setTempUsername] = useState('');
-  const [completedAchievements, setCompletedAchievements] = useState<Achievement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  
+  const router = useRouter();
+
   useEffect(() => {
     setIsClient(true);
-    
-    // Profile
-    let userProfile = JSON.parse(localStorage.getItem('crypto_user') || 'null');
-    if (!userProfile) {
-      userProfile = {
-        username: 'CryptoPlayer',
-        userId: `user_${Math.random().toString(36).substr(2, 9)}`,
-        avatar: '' // Will use fallback
-      };
-      localStorage.setItem('crypto_user', JSON.stringify(userProfile));
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is signed in.
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as UserProfile;
+          setProfile(userData);
+
+          // For demo, we still use some local storage stats
+          const easyCompleted = JSON.parse(localStorage.getItem(`completedLevels_easy_${user.uid}`) || '[]').length;
+          const mediumCompleted = JSON.parse(localStorage.getItem(`completedLevels_medium_${user.uid}`) || '[]').length;
+          const hardCompleted = JSON.parse(localStorage.getItem(`completedLevels_hard_${user.uid}`) || '[]').length;
+
+          setStats({
+            puzzlesSolved: easyCompleted + mediumCompleted + hardCompleted,
+            dailyStreak: parseInt(localStorage.getItem(`dailyPuzzleStreak_${user.uid}`) || '0', 10),
+            fastestTime: 'N/A', // Placeholder
+            hintsUsed: 0, // Placeholder
+            coins: parseInt(localStorage.getItem(`crypto_coins_${user.uid}`) || '200', 10),
+          });
+        } else {
+          // This case might happen if Firestore doc creation failed during signup
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not find user profile.' });
+          router.push('/login');
+        }
+      } else {
+        // User is signed out.
+        router.push('/login');
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, toast]);
+  
+  const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        toast({ title: 'Logged Out', description: 'You have been successfully signed out.'});
+        router.push('/login');
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Logout Failed', description: 'Could not log you out. Please try again.'})
     }
-    setProfile(userProfile);
-    setTempUsername(userProfile.username);
-
-    // Coins
-    const savedCoins = localStorage.getItem('crypto_coins');
-    setCoins(parseInt(savedCoins || '200', 10));
-
-    // Stats
-    const easyCompleted = JSON.parse(localStorage.getItem('completedLevels_easy') || '[]').length;
-    const mediumCompleted = JSON.parse(localStorage.getItem('completedLevels_medium') || '[]').length;
-    const hardCompleted = JSON.parse(localStorage.getItem('completedLevels_hard') || '[]').length;
-    
-    const puzzlesSolved = easyCompleted + mediumCompleted + hardCompleted;
-    const dailyStreak = parseInt(localStorage.getItem('dailyPuzzleStreak') || '0', 10);
-    // Placeholder for now
-    const fastestTime = 'N/A';
-    const hintsUsed = 0; 
-    
-    setStats({ puzzlesSolved, fastestTime, dailyStreak, hintsUsed });
-
-    // Achievements
-    const unlockedIds = JSON.parse(localStorage.getItem('crypto_unlocked_achievements') || '[]');
-    const unlocked = initialAchievements.filter(ach => unlockedIds.includes(ach.id) || ach.currentProgress >= ach.targetProgress);
-    setCompletedAchievements(unlocked);
+  }
 
 
-  }, []);
-
-  const handleUsernameSave = () => {
-    if (tempUsername.trim().length < 3) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Username',
-        description: 'Username must be at least 3 characters long.',
-      });
-      return;
-    }
-    if (profile) {
-      const updatedProfile = { ...profile, username: tempUsername };
-      setProfile(updatedProfile);
-      localStorage.setItem('crypto_user', JSON.stringify(updatedProfile));
-      setIsEditing(false);
-      toast({ title: 'Profile Updated!', description: 'Your username has been changed.' });
-    }
-  };
-
-  const statItems = useMemo(() => stats ? [
-    { label: 'Puzzles Solved', value: stats.puzzlesSolved, icon: <Puzzle className="h-5 w-5 text-primary" /> },
-    { label: 'Daily Streak', value: `${stats.dailyStreak} Days`, icon: <Flame className="h-5 w-5 text-orange-500" /> },
-    { label: 'Fastest Time', value: stats.fastestTime, icon: <Puzzle className="h-5 w-5 text-green-500" /> },
-    { label: 'Hints Used', value: stats.hintsUsed, icon: <Lightbulb className="h-5 w-5 text-yellow-500" /> },
-  ] : [], [stats]);
-
-  if (!isClient || !profile || !stats) {
+  if (isLoading || !isClient) {
     return (
         <div className="mx-auto max-w-md space-y-6">
             <Card className="p-6">
@@ -120,7 +97,6 @@ export function ProfileClientPage() {
                         <Skeleton className="h-4 w-40" />
                     </div>
                 </CardHeader>
-
                 <CardContent className="p-0">
                     <div className="mb-6 rounded-lg border p-4">
                         <div className="flex items-center justify-center gap-2">
@@ -128,7 +104,6 @@ export function ProfileClientPage() {
                              <Skeleton className="h-8 w-24" />
                         </div>
                     </div>
-
                     <div className="grid grid-cols-2 gap-4 text-center">
                         {[...Array(4)].map((_, i) => (
                             <div key={i} className="space-y-1 p-2 border rounded-lg">
@@ -141,13 +116,26 @@ export function ProfileClientPage() {
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2 pt-6 p-0">
                          <Skeleton className="h-10 w-full" />
-                         <Skeleton className="h-10 w-full" />
-                         <Skeleton className="h-10 w-full" />
                     </CardFooter>
             </Card>
         </div>
     )
   }
+
+  if (!profile || !stats) {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <p>Could not load profile. Please try logging in again.</p>
+        </div>
+    )
+  }
+
+  const statItems = [
+    { label: 'Puzzles Solved', value: stats.puzzlesSolved, icon: <Puzzle className="h-5 w-5 text-primary" /> },
+    { label: 'Daily Streak', value: `${stats.dailyStreak} Days`, icon: <Flame className="h-5 w-5 text-orange-500" /> },
+    { label: 'Fastest Time', value: stats.fastestTime, icon: <Puzzle className="h-5 w-5 text-green-500" /> },
+    { label: 'Hints Used', value: stats.hintsUsed, icon: <Lightbulb className="h-5 w-5 text-yellow-500" /> },
+  ];
 
   return (
     <div className="mx-auto max-w-md">
@@ -160,34 +148,18 @@ export function ProfileClientPage() {
             </AvatarFallback>
           </Avatar>
           <div className="pt-4">
-            {isEditing ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={tempUsername}
-                  onChange={(e) => setTempUsername(e.target.value)}
-                  className="text-center text-2xl font-bold"
-                />
-              </div>
-            ) : (
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <span>{profile.username}</span>
-                <CheckCircle2 className="h-6 w-6 text-blue-500 fill-blue-100" />
-              </CardTitle>
-            )}
-            <CardDescription className="pt-1">{profile.userId}</CardDescription>
+            <CardTitle className="text-2xl">{profile.username}</CardTitle>
+            <CardDescription className="pt-1">{profile.email}</CardDescription>
           </div>
         </CardHeader>
 
         <CardContent className="p-6">
             <Button asChild className="w-full mb-6" variant="outline">
-                <Link href="/coin-shop">
-                    <div className="flex items-center justify-center gap-2 text-xl font-bold text-yellow-600 dark:text-yellow-400">
-                        <Coins className="h-6 w-6" />
-                        <span>{coins} Coins</span>
-                    </div>
-                </Link>
+                <div className="flex items-center justify-center gap-2 text-xl font-bold text-yellow-600 dark:text-yellow-400">
+                    <Coins className="h-6 w-6" />
+                    <span>{stats.coins} Coins</span>
+                </div>
             </Button>
-
             <div className="grid grid-cols-2 gap-4 text-center">
                 {statItems.map(item => (
                     <div key={item.label} className="flex flex-col items-center justify-center rounded-lg border bg-background p-3 space-y-2">
@@ -197,35 +169,12 @@ export function ProfileClientPage() {
                     </div>
                 ))}
             </div>
-
-            {completedAchievements.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-center text-lg font-semibold mb-4">Recent Achievements</h3>
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                        {completedAchievements.slice(0, 3).map(ach => (
-                           <Card key={ach.id} className="p-3 bg-muted/50">
-                               <CardContent className="flex flex-col items-center justify-center gap-2 p-0">
-                                   <Medal className={cn("h-8 w-8", TIER_COLORS[ach.tier])} />
-                                   <p className="text-xs font-semibold leading-tight">{ach.title}</p>
-                               </CardContent>
-                           </Card>
-                        ))}
-                    </div>
-                </div>
-            )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-2 bg-muted/30 p-4">
-          {isEditing ? (
-             <div className="grid grid-cols-2 gap-2 w-full">
-                <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                <Button onClick={handleUsernameSave}>Save</Button>
-            </div>
-          ) : (
-            <Button onClick={() => setIsEditing(true)} className="w-full">
-              <Pencil className="mr-2" /> Edit Profile
+            <Button onClick={handleLogout} variant="ghost" className="w-full">
+              <LogOut className="mr-2 h-4 w-4" /> Log Out
             </Button>
-          )}
         </CardFooter>
       </Card>
     </div>

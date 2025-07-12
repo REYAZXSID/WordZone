@@ -27,44 +27,51 @@ import { useToast } from '@/hooks/use-toast';
 import { signIn, signUp } from '@/lib/auth-actions';
 import { useRouter } from 'next/navigation';
 
-const authSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters long.'),
 });
 
-type AuthFormValues = z.infer<typeof authSchema>;
+const signupSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters long.'),
+  email: z.string().email('Please enter a valid email address.'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters long.'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function AuthForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('login');
 
-  const form = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = form;
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+    },
+  });
 
-  const onSubmit = async (values: AuthFormValues) => {
+  const onLoginSubmit = async (values: LoginFormValues) => {
     try {
-      if (activeTab === 'login') {
-        await signIn(values);
-        toast({ title: 'Login Successful', description: "Welcome back!" });
-      } else {
-        await signUp(values);
-        toast({ title: 'Sign Up Successful', description: 'Welcome! Please log in.' });
-        setActiveTab('login'); // Switch to login tab after signup
-      }
-      router.push('/profile'); // Redirect to profile page on success
+      await signIn(values);
+      toast({ title: 'Login Successful', description: "Welcome back!" });
+      router.push('/profile');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -73,6 +80,23 @@ export function AuthForm() {
       });
     }
   };
+
+  const onSignupSubmit = async (values: SignupFormValues) => {
+    try {
+      await signUp(values);
+      toast({ title: 'Sign Up Successful', description: 'Welcome! Please log in.' });
+      setActiveTab('login'); 
+      signupForm.reset();
+      loginForm.setValue('email', values.email);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    }
+  };
+
 
   return (
     <div className="w-full max-w-md">
@@ -90,10 +114,10 @@ export function AuthForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                   <FormField
-                    control={form.control}
+                    control={loginForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -110,7 +134,7 @@ export function AuthForm() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={loginForm.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -126,8 +150,8 @@ export function AuthForm() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Logging in...' : 'Login'}
+                  <Button type="submit" className="w-full" disabled={loginForm.formState.isSubmitting}>
+                    {loginForm.formState.isSubmitting ? 'Logging in...' : 'Login'}
                   </Button>
                 </form>
               </Form>
@@ -143,10 +167,26 @@ export function AuthForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <Form {...signupForm}>
+                <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
                    <FormField
-                    control={form.control}
+                    control={signupForm.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="CryptoPlayer123"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={signupForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -163,7 +203,7 @@ export function AuthForm() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={signupForm.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -179,8 +219,8 @@ export function AuthForm() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                     {isSubmitting ? 'Signing up...' : 'Create Account'}
+                  <Button type="submit" className="w-full" disabled={signupForm.formState.isSubmitting}>
+                     {signupForm.formState.isSubmitting ? 'Signing up...' : 'Create Account'}
                   </Button>
                 </form>
               </Form>

@@ -1,0 +1,15 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // New users can create their own profile during sign-up
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Users can update their own profile
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
