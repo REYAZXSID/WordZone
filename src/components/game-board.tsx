@@ -185,37 +185,36 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
       <main className="flex-1 flex flex-col items-center justify-between p-4 gap-4 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
-          <div className="flex flex-wrap justify-center gap-x-3 gap-y-4">
-            {puzzle.text.split(' ').map((word, wordIndex) => (
-              <div key={`word-${wordIndex}`} className="flex flex-nowrap items-center gap-1.5">
-                {word.split('').map((char, charIndex) => {
-                  if (ALPHABET.includes(char)) {
-                    return (
-                      <div
-                        key={`${wordIndex}-${charIndex}`}
-                        onClick={() => handleLetterSelect(char)}
-                        className={cn(
-                          "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                          selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
-                          animateCorrect === char ? 'correct-guess-animation' : ''
-                        )}
-                      >
-                        <div className="text-muted-foreground text-xs pt-1">{letterToNumberMap[char]}</div>
-                        <div className="text-lg font-bold text-foreground pb-1">
-                          {userGuesses[char] || ''}
-                        </div>
-                      </div>
-                    );
-                  }
-                  // Render non-alphabetic characters like punctuation directly
-                  return (
-                     <div key={`punct-${wordIndex}-${charIndex}`} className="flex h-12 w-5 items-end justify-center pb-1 text-xl font-bold">
-                        {char}
-                     </div>
-                  );
-                })}
-              </div>
-            ))}
+          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
+            {puzzle.text.split('').map((char, index) => {
+              if (ALPHABET.includes(char)) {
+                return (
+                  <div
+                    key={`${char}-${index}`}
+                    onClick={() => handleLetterSelect(char)}
+                    className={cn(
+                      "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
+                      selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                      animateCorrect === char ? 'correct-guess-animation' : ''
+                    )}
+                  >
+                    <div className="text-muted-foreground text-xs pt-1">{letterToNumberMap[char]}</div>
+                    <div className="text-lg font-bold text-foreground pb-1">
+                      {userGuesses[char] || ''}
+                    </div>
+                  </div>
+                );
+              }
+              if (char === ' ') {
+                 return <div key={`space-${index}`} className="w-4" />;
+              }
+              // Render non-alphabetic characters like punctuation directly
+              return (
+                  <div key={`punct-${index}`} className="flex h-12 w-5 items-end justify-center pb-1 text-xl font-bold">
+                    {char}
+                  </div>
+              );
+            })}
           </div>
         </div>
 
@@ -225,8 +224,8 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
-                size="lg"
-                className="h-12 w-full p-0 text-sm font-bold"
+                size="sm"
+                className="h-10 w-full p-0 text-sm font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
               >
