@@ -18,8 +18,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Coins, Puzzle, Flame, Lightbulb, Pencil, LogOut, Trash2 } from 'lucide-react';
+import { Coins, Puzzle, Flame, Lightbulb, Pencil, LogOut, Trash2, Medal, CheckCircle2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { initialAchievements, type Achievement } from '../achievements/achievements-client-page';
+import { cn } from '@/lib/utils';
+
 
 type UserProfile = {
   username: string;
@@ -34,6 +37,12 @@ type UserStats = {
   hintsUsed: number;
 };
 
+const TIER_COLORS = {
+  bronze: 'text-orange-600',
+  silver: 'text-gray-400',
+  gold: 'text-yellow-500',
+};
+
 export function ProfileClientPage() {
   const [isClient, setIsClient] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -41,6 +50,7 @@ export function ProfileClientPage() {
   const [coins, setCoins] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [tempUsername, setTempUsername] = useState('');
+  const [completedAchievements, setCompletedAchievements] = useState<Achievement[]>([]);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -75,6 +85,12 @@ export function ProfileClientPage() {
     const hintsUsed = 0; 
     
     setStats({ puzzlesSolved, fastestTime, dailyStreak, hintsUsed });
+
+    // Achievements
+    const unlockedIds = JSON.parse(localStorage.getItem('crypto_unlocked_achievements') || '[]');
+    const unlocked = initialAchievements.filter(ach => unlockedIds.includes(ach.id) || ach.currentProgress >= ach.targetProgress);
+    setCompletedAchievements(unlocked);
+
 
   }, []);
 
@@ -198,6 +214,22 @@ export function ProfileClientPage() {
                     </div>
                 ))}
             </div>
+
+            {completedAchievements.length > 0 && (
+                <div className="mt-6">
+                    <h3 className="text-center text-lg font-semibold mb-4">Recent Achievements</h3>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                        {completedAchievements.slice(0, 3).map(ach => (
+                           <Card key={ach.id} className="p-3 bg-muted/50">
+                               <CardContent className="flex flex-col items-center justify-center gap-2 p-0">
+                                   <Medal className={cn("h-8 w-8", TIER_COLORS[ach.tier])} />
+                                   <p className="text-xs font-semibold leading-tight">{ach.title}</p>
+                               </CardContent>
+                           </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-2 bg-muted/30 p-4">

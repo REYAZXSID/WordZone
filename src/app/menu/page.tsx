@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -22,6 +22,12 @@ const menuItems: MenuItem[] = [
     description: 'Complete daily tasks for rewards.',
     href: '/missions',
     icon: <ListChecks className="h-8 w-8 text-purple-500" />,
+  },
+  {
+    name: 'Achievements',
+    description: 'Unlock milestones and earn badges.',
+    href: '/achievements',
+    icon: <Star className="h-8 w-8 text-yellow-400" />,
   },
   {
     name: 'Profile',
