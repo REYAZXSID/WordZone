@@ -216,14 +216,14 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-2xl mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
-           <div className="grid grid-cols-9 md:grid-cols-13 gap-1 md:gap-2 justify-center">
+        <div className="w-full max-w-lg mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
+           <div className="grid grid-cols-7 gap-2 justify-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
                 size="sm"
-                className="h-8 w-8 p-0 text-xs md:h-10 md:w-10 md:text-base"
+                className="h-12 w-full p-0 text-base font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
               >
