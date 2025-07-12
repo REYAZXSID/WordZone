@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Puzzle } from '@/lib/puzzles';
@@ -41,7 +42,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
-  const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap), [letterToNumberMap]);
+  const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap).filter(l => puzzle.text.includes(l)), [letterToNumberMap, puzzle.text]);
   const words = useMemo(() => puzzle.text.split(' '), [puzzle.text]);
 
   const resetGame = useCallback(() => {
@@ -80,10 +81,11 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   }, [userGuesses, onGameComplete, solvedCipher, puzzleEncryptedLetters, isComplete]);
 
   useEffect(() => {
-    if (Object.keys(userGuesses).length === puzzleEncryptedLetters.length) {
+    if (Object.keys(userGuesses).length >= puzzleEncryptedLetters.length) {
       checkSolution();
     }
   }, [userGuesses, checkSolution, puzzleEncryptedLetters]);
+
 
   const handleLetterSelect = (letter: string) => {
     if (isComplete) return;
@@ -95,6 +97,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
     
     const newGuesses = {...userGuesses};
     
+    // Clear previous uses of this guess
     for (const key in newGuesses) {
         if (newGuesses[key] === guess) {
             delete newGuesses[key];
@@ -135,6 +138,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
         const decrypted = result.decryptedLetter;
         
         const newGuesses = {...userGuesses};
+        // Clear previous uses of this guess
         for (const key in newGuesses) {
             if (newGuesses[key] === decrypted) {
                 delete newGuesses[key];
@@ -159,9 +163,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   };
 
   const usedLetters = Object.values(userGuesses);
-  const letterIsCorrect = (letter: string) => {
-    return userGuesses[letter] === solvedCipher[letter];
-  }
 
   const renderHeaderActions = () => (
      <>
@@ -195,8 +196,8 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
                                 onClick={() => handleLetterSelect(char)}
                                 className={cn(
                                   "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-transparent",
-                                   animateCorrect === char ? 'correct-guess-animation' : ''
+                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-card",
+                                  animateCorrect === char ? 'correct-guess-animation' : ''
                                 )}
                               >
                                 <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
@@ -218,7 +219,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
         </div>
 
         <div className="w-full max-w-xl p-2 rounded-lg bg-card/50">
-           <div className="grid grid-cols-7 gap-1 md:grid-cols-13 md:gap-2">
+           <div className="grid grid-cols-7 gap-1 md:grid-cols-13 md:gap-2 justify-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
