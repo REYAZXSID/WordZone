@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PageHeader } from './page-header';
+import { ThemeToggle } from './theme-toggle';
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -160,14 +161,19 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   
   const renderHeaderActions = () => (
     <div className="flex items-center gap-2">
-      <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
-        <Lightbulb className="h-5 w-5" />
-        <span className="sr-only">Hint</span>
-      </Button>
-      <Button onClick={resetGame} variant="ghost" size="icon">
-        <RotateCcw className="h-5 w-5" />
-        <span className="sr-only">Reset</span>
-      </Button>
+      <ThemeToggle />
+      {onNewGame && (
+         <>
+          <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
+            <Lightbulb className="h-5 w-5" />
+            <span className="sr-only">Hint</span>
+          </Button>
+          <Button onClick={resetGame} variant="ghost" size="icon">
+            <RotateCcw className="h-5 w-5" />
+            <span className="sr-only">Reset</span>
+          </Button>
+        </>
+      )}
     </div>
   );
 
@@ -176,7 +182,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
   return (
     <>
-      <PageHeader title="Decode the Quote" actions={onNewGame ? renderHeaderActions() : undefined} />
+      <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
       <main className="flex-1 flex flex-col items-center justify-start p-4 gap-8 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="w-full text-center mb-6">
@@ -216,14 +222,14 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-lg mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
+        <div className="w-full max-w-md mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
            <div className="grid grid-cols-7 gap-2 justify-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
                 size="sm"
-                className="h-12 w-full p-0 text-base font-bold"
+                className="h-14 w-full p-0 text-base font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
               >

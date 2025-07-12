@@ -60,6 +60,33 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+  .neon {
+    --background: 220 40% 5%;
+    --foreground: 210 40% 98%;
+    --card: 220 40% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 40% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 220 40% 5%;
+    --secondary: 180 100% 15%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 180 100% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 180 100% 50%;
+    --accent-foreground: 220 40% 5%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 180 100% 15%;
+    --input: 180 100% 15%;
+    --ring: 180 100% 50%;
+    --radius: 0.5rem;
+    --chart-1: 180 70% 50%;
+    --chart-2: 210 60% 45%;
+    --chart-3: 150 80% 55%;
+    --chart-4: 190 65% 60%;
+    --chart-5: 170 75% 55%;
+  }
 }
 
 @layer base {
