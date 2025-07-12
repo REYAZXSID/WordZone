@@ -98,13 +98,19 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     if (!isDailyChallenge) {
         switch(puzzle.difficulty) {
             case 'easy':
-                numberOfHints = 4;
+                numberOfHints = 5;
                 break;
             case 'medium':
-                numberOfHints = 3;
+                numberOfHints = 4;
                 break;
             case 'hard':
+                numberOfHints = 3;
+                break;
+            case 'intermediate':
                 numberOfHints = 2;
+                break;
+            case 'advance':
+                numberOfHints = 1;
                 break;
         }
     }
