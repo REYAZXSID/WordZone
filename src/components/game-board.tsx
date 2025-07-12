@@ -6,7 +6,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, RotateCcw, PartyPopper, ArrowRight, Home, RefreshCw, Coins } from 'lucide-react';
+import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
