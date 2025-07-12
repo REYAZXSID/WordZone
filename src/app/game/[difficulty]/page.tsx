@@ -39,7 +39,7 @@ export default function LevelSelectionPage() {
         <main className="flex-1 p-4 sm:p-6">
           <div className="mx-auto grid max-w-4xl grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8">
             {levels.map((level) => (
-              <Card key={level} className="h-24 w-24 animate-pulse rounded-lg bg-muted" />
+              <Card key={level} className="h-20 w-20 animate-pulse rounded-full bg-muted" />
             ))}
           </div>
         </main>
@@ -70,7 +70,7 @@ export default function LevelSelectionPage() {
               >
                 <Card
                   className={cn(
-                    'relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-lg transition-all duration-200 group',
+                    'relative flex h-20 w-20 flex-col items-center justify-center overflow-hidden rounded-full transition-all duration-200 group',
                     isLocked
                       ? 'bg-muted text-muted-foreground'
                       : 'hover:scale-105 hover:shadow-lg hover:border-primary/50',
@@ -80,8 +80,8 @@ export default function LevelSelectionPage() {
                   )}
                 >
                   {isCompleted && (
-                    <div className="absolute top-2 right-2 rounded-full bg-green-500 p-1 text-white">
-                        <Check className="h-3 w-3" />
+                    <div className="absolute top-1.5 right-1.5 rounded-full bg-green-500 p-1 text-white">
+                        <Check className="h-2 w-2" />
                     </div>
                   )}
                   <CardContent className="flex flex-col items-center justify-center p-2 text-center">
@@ -97,10 +97,10 @@ export default function LevelSelectionPage() {
                     )}
                   </CardContent>
                   {isCompleted && !isLocked && (
-                       <div className="absolute bottom-3 flex gap-0.5">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
+                       <div className="absolute bottom-2 flex gap-0.5">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
                         </div>
                     )}
                 </Card>
