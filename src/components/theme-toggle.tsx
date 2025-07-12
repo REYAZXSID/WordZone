@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles } from "lucide-react"
+import { Moon, Sun, Sparkles, Flower2 } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -37,6 +37,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("neon")}>
           <Sparkles className="mr-2 h-4 w-4" />
           <span>Neon</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("pink-blossom")}>
+          <Flower2 className="mr-2 h-4 w-4" />
+          <span>Pink Blossom</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

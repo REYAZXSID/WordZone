@@ -88,6 +88,33 @@ body {
     --chart-4: 190 65% 60%;
     --chart-5: 170 75% 55%;
   }
+  .pink-blossom {
+    --background: 350 80% 98%;
+    --foreground: 340 20% 15%;
+    --card: 350 70% 96%;
+    --card-foreground: 340 20% 15%;
+    --popover: 350 70% 96%;
+    --popover-foreground: 340 20% 15%;
+    --primary: 340 82% 61%; /* Hot pink */
+    --primary-foreground: 350 80% 98%;
+    --secondary: 345 60% 90%;
+    --secondary-foreground: 340 20% 15%;
+    --muted: 345 60% 90%;
+    --muted-foreground: 340 10% 45%;
+    --accent: 130 40% 70%; /* Soft green */
+    --accent-foreground: 130 20% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 345 60% 85%;
+    --input: 345 60% 85%;
+    --ring: 340 82% 61%;
+    --radius: 0.75rem;
+    --chart-1: 340 80% 70%;
+    --chart-2: 130 50% 60%;
+    --chart-3: 350 90% 80%;
+    --chart-4: 20 80% 70%;
+    --chart-5: 140 40% 50%;
+  }
 }
 
 @layer base {
@@ -178,4 +205,24 @@ body {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: text-gradient-animation 10s ease infinite;
+}
+
+@keyframes bubble-float {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100vh) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.bubble {
+  position: absolute;
+  bottom: -50px;
+  background-color: hsla(var(--primary), 0.2);
+  border-radius: 50%;
+  animation: bubble-float linear infinite;
+  pointer-events: none;
 }

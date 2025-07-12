@@ -12,6 +12,19 @@ export default function Home() {
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary/30 rounded-full filter blur-3xl opacity-50 glow-effect-1"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-accent/30 rounded-full filter blur-3xl opacity-50 glow-effect-2"></div>
+        {/* Bubbles for pink-blossom theme */}
+        <div className="pink-blossom:block hidden">
+          {Array.from({ length: 15 }).map((_, i) => {
+            const style = {
+              left: `${Math.random() * 100}vw`,
+              width: `${Math.random() * 60 + 20}px`,
+              height: `${Math.random() * 60 + 20}px`,
+              animationDuration: `${Math.random() * 10 + 10}s`,
+              animationDelay: `${Math.random() * 5}s`,
+            };
+            return <div key={i} className="bubble" style={style} />;
+          })}
+        </div>
       </div>
       
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-end z-10 gap-2">
