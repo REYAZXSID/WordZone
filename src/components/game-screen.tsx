@@ -8,6 +8,7 @@ import { getPuzzleForLevel, getTotalPuzzles } from '@/lib/puzzles';
 import type { Puzzle, Difficulty } from '@/lib/puzzles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useSound } from '@/hooks/use-sound';
 
 export function GameScreen() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ export function GameScreen() {
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+  const playSound = useSound();
 
   const difficulty = (searchParams.get('difficulty') as Difficulty) || 'easy';
   const level = parseInt(searchParams.get('level') || '1', 10);
@@ -25,7 +27,7 @@ export function GameScreen() {
     setPuzzle(currentPuzzle);
   }, [difficulty, level]);
 
-  const handleGameComplete = (): number => {
+  const handleGameComplete = (durationInSeconds: number): number => {
     // Save progress to local storage
     if (typeof window !== 'undefined') {
       const key = `completedLevels_${difficulty}`;
@@ -41,18 +43,31 @@ export function GameScreen() {
         if (puzzle?.difficulty === 'medium') reward = 25;
         if (puzzle?.difficulty === 'hard') reward = 50;
 
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-        const newCoinBalance = currentCoins + reward;
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
-        
-        // This toast is a fallback, main toast comes from bonus check
-        if (reward > 0) {
+        let totalReward = reward;
+
+        // Add time bonus
+        if (durationInSeconds <= 60) {
+            const timeBonus = 5;
+            totalReward += timeBonus;
+            playSound('coin');
             toast({
-                title: 'Level Complete!',
-                description: `You earned ${reward} coins.`,
+                title: 'Speed Bonus!',
+                description: `Solved in under a minute! +${timeBonus} coins.`,
             });
         }
-        return reward;
+        
+        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+        const newCoinBalance = currentCoins + totalReward;
+        localStorage.setItem('crypto_coins', newCoinBalance.toString());
+
+        if (reward > 0) {
+             toast({
+                title: 'Level Complete!',
+                description: `You earned ${totalReward} coins.`,
+            });
+        }
+        
+        return totalReward;
       }
     }
     return 0; // No reward if already completed

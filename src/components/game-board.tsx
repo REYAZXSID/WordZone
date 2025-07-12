@@ -25,7 +25,7 @@ type GameBoardProps = {
   puzzle: Puzzle;
   level?: number;
   isDailyChallenge?: boolean;
-  onGameComplete?: () => number; // Returns coins earned
+  onGameComplete?: (durationInSeconds: number) => number; // Returns coins earned
   onNextLevel?: () => void;
   onPlayAgain?: () => void;
   onMainMenu?: () => void;
@@ -56,9 +56,15 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setIsClient(true);
     updateCoins();
     
-    window.addEventListener('storage', updateCoins);
+    // Listen for storage changes to keep coins in sync across tabs/components
+    const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'crypto_coins') {
+            updateCoins();
+        }
+    }
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      window.removeEventListener('storage', updateCoins);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [updateCoins]);
 
@@ -96,39 +102,23 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   }, [puzzle.id, resetGame]);
 
   const handleGameCompletion = useCallback(() => {
-    if (isComplete) return;
+    if (isComplete || !startTime) return;
+
+    const endTime = Date.now();
+    const durationInSeconds = (endTime - startTime) / 1000;
 
     let totalReward = 0;
     if (onGameComplete) {
-      totalReward = onGameComplete();
+      totalReward = onGameComplete(durationInSeconds);
     }
     
-    // Time bonus logic for regular levels
-    if (!isDailyChallenge && startTime) {
-      const endTime = Date.now();
-      const durationInSeconds = (endTime - startTime) / 1000;
-      if (durationInSeconds <= 60 && totalReward > 0) { // Only give bonus if they got a reward
-        const timeBonus = 5;
-        totalReward += timeBonus;
-        
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-        const newCoinBalance = currentCoins + timeBonus;
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
-
-        playSound('coin');
-        toast({
-          title: 'Speed Bonus!',
-          description: `Solved in under a minute! +${timeBonus} coins.`,
-        });
-      }
-    }
-
+    setCoins(prevCoins => prevCoins + totalReward);
     setCoinsEarned(totalReward);
     setIsComplete(true);
     setShowWinDialog(true);
     playSound('victory');
     
-  }, [isComplete, onGameComplete, startTime, isDailyChallenge, toast, playSound]);
+  }, [isComplete, onGameComplete, startTime, toast, playSound]);
 
   const checkSolution = useCallback(() => {
     const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
