@@ -22,6 +22,7 @@ import { Coins, Puzzle, Flame, Lightbulb, Pencil, LogOut, Trash2, Medal, CheckCi
 import { Skeleton } from '@/components/ui/skeleton';
 import { initialAchievements, type Achievement } from '../achievements/achievements-client-page';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 
 type UserProfile = {
@@ -112,18 +113,6 @@ export function ProfileClientPage() {
     }
   };
 
-  const handleResetProgress = () => {
-    // Clear all app-related localStorage
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('crypto_') || key.startsWith('completedLevels_') || key.startsWith('dailyPuzzle')) {
-            localStorage.removeItem(key);
-        }
-    });
-    // Can't use router here, so we reload to reset state
-    window.location.reload(); 
-    toast({ title: "Progress Reset", description: "Your game data has been cleared." });
-  }
-
   const statItems = useMemo(() => stats ? [
     { label: 'Puzzles Solved', value: stats.puzzlesSolved, icon: <Puzzle className="h-5 w-5 text-primary" /> },
     { label: 'Daily Streak', value: `${stats.dailyStreak} Days`, icon: <Flame className="h-5 w-5 text-orange-500" /> },
@@ -201,12 +190,14 @@ export function ProfileClientPage() {
         </CardHeader>
 
         <CardContent className="p-6">
-            <div className="mb-6 rounded-lg border-2 border-yellow-400/50 bg-yellow-400/10 p-3">
-                <div className="flex items-center justify-center gap-2 text-xl font-bold text-yellow-600 dark:text-yellow-400">
-                    <Coins className="h-6 w-6" />
-                    <span>{coins} Coins</span>
-                </div>
-            </div>
+            <Button asChild className="w-full mb-6" variant="outline">
+                <Link href="/coin-shop">
+                    <div className="flex items-center justify-center gap-2 text-xl font-bold text-yellow-600 dark:text-yellow-400">
+                        <Coins className="h-6 w-6" />
+                        <span>{coins} Coins</span>
+                    </div>
+                </Link>
+            </Button>
 
             <div className="grid grid-cols-2 gap-4 text-center">
                 {statItems.map(item => (
@@ -246,33 +237,6 @@ export function ProfileClientPage() {
               <Pencil className="mr-2" /> Edit Profile
             </Button>
           )}
-
-          <AlertDialog>
-             <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
-                    <Trash2 className="mr-2" /> Reset Progress
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all
-                    your puzzle progress, stats, and power-ups.
-                </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleResetProgress}>
-                    Yes, reset everything
-                </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          
-          <Button variant="ghost" className="w-full">
-            <LogOut className="mr-2" /> Log Out
-          </Button>
         </CardFooter>
       </Card>
     </div>
