@@ -183,35 +183,37 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           <div className="w-full text-center mb-4">
              <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-1">
-            {puzzle.text.split('').map((char, index) => {
-              if (ALPHABET.includes(char)) {
-                return (
-                  <div
-                    key={`${char}-${index}`}
-                    onClick={() => handleLetterSelect(char)}
-                    className={cn(
-                      "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                      selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
-                      animateCorrect === char ? 'correct-guess-animation' : ''
-                    )}
-                  >
-                    <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
-                    <div className="text-2xl font-bold text-foreground pb-1">
-                      {userGuesses[char] || ''}
-                    </div>
-                  </div>
-                );
-              }
-              if (char === ' ') {
-                 return <div key={`space-${index}`} className="w-4 h-16" />;
-              }
-              return (
-                 <div key={`char-${index}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
-                    {char}
-                 </div>
-              );
-            })}
+          <div className="flex flex-wrap justify-center gap-x-3 gap-y-2">
+            {puzzle.text.split(' ').map((word, wordIndex) => (
+              <div key={`word-${wordIndex}`} className="flex flex-nowrap gap-1">
+                {word.split('').map((char, charIndex) => {
+                  if (ALPHABET.includes(char)) {
+                    return (
+                      <div
+                        key={`${char}-${wordIndex}-${charIndex}`}
+                        onClick={() => handleLetterSelect(char)}
+                        className={cn(
+                          "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
+                          selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
+                          animateCorrect === char ? 'correct-guess-animation' : ''
+                        )}
+                      >
+                        <div className="text-muted-foreground text-sm pt-1">{letterToNumberMap[char]}</div>
+                        <div className="text-2xl font-bold text-foreground pb-1">
+                          {userGuesses[char] || ''}
+                        </div>
+                      </div>
+                    );
+                  }
+                  // Render non-alphabetic characters like punctuation directly
+                  return (
+                     <div key={`char-${wordIndex}-${charIndex}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
+                        {char}
+                     </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
 
