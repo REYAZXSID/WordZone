@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, ArrowRight, Settings, BookOpen, User, Puzzle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function Home() {
   return (
@@ -20,6 +21,13 @@ export default function Home() {
             <span className="sr-only">Login</span>
           </Link>
         </Button>
+        <Button asChild variant="ghost" size="icon">
+            <Link href="/settings">
+                <Settings className="h-6 w-6" />
+                <span className="sr-only">Settings</span>
+            </Link>
+        </Button>
+        <ThemeToggle />
         <Button asChild variant="ghost" size="icon">
           <Link href="/menu">
             <Menu className="h-6 w-6" />
@@ -51,12 +59,6 @@ export default function Home() {
               <Link href="/how-to-play">
                 <BookOpen className="mr-2 h-5 w-5" />
                 How to Play
-              </Link>
-            </Button>
-            <Button asChild size="lg" className="h-14 text-lg" variant="outline">
-              <Link href="/settings">
-                <Settings className="mr-2 h-5 w-5" />
-                Settings
               </Link>
             </Button>
           </div>

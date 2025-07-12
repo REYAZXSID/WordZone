@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PageHeader } from './page-header';
-import { ThemeToggle } from './theme-toggle';
 import { useSound } from '@/hooks/use-sound';
 import { PowerUpBar } from './power-up-bar';
 import Link from 'next/link';
@@ -304,7 +303,6 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   
   const renderHeaderActions = () => (
     <div className="flex items-center gap-2">
-      <ThemeToggle />
       <Button asChild variant="ghost" size="icon">
         <Link href="/shop">
           <ShoppingCart className="h-5 w-5" />
@@ -444,5 +442,3 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     </>
   );
 }
-
-    
