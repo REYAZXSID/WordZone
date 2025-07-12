@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -7,12 +8,15 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Volume2, VolumeX, Languages } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function SettingsClientPage() {
+  const [isClient, setIsClient] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [language, setLanguage] = useState('en');
 
   useEffect(() => {
+    setIsClient(true);
     const savedSound = localStorage.getItem('crypto-sound');
     if (savedSound) {
       setSoundEnabled(JSON.parse(savedSound));
@@ -32,6 +36,44 @@ export function SettingsClientPage() {
     setLanguage(lang);
     localStorage.setItem('crypto-lang', lang);
   };
+  
+  if (!isClient) {
+    return (
+       <div className="mx-auto max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Preferences</CardTitle>
+            <CardDescription>
+              Customize your CryptoPuzzle experience.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <Skeleton className="h-10 w-10" />
+            </div>
+             <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+              <Skeleton className="h-6 w-11" />
+            </div>
+             <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-4 w-44" />
+              </div>
+              <Skeleton className="h-10 w-[180px]" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
