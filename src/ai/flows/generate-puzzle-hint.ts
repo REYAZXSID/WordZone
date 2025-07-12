@@ -30,21 +30,6 @@ export async function generatePuzzleHint(input: GeneratePuzzleHintInput): Promis
   return generatePuzzleHintFlow(input);
 }
 
-const generatePuzzleHintPrompt = ai.definePrompt({
-  name: 'generatePuzzleHintPrompt',
-  input: {schema: GeneratePuzzleHintInputSchema},
-  output: {schema: GeneratePuzzleHintOutputSchema},
-  prompt: `You are a puzzle master helping users solve substitution cipher puzzles.
-
-  Given an encrypted letter and the solved cipher, provide the decrypted letter.
-  
-  Encrypted Letter: {{{encryptedLetter}}}
-  Solved Cipher: {{JSON.stringify solvedCipher}}
-
-  Provide only the decrypted letter as the output.
-  `,
-});
-
 const generatePuzzleHintFlow = ai.defineFlow(
   {
     name: 'generatePuzzleHintFlow',
@@ -53,14 +38,13 @@ const generatePuzzleHintFlow = ai.defineFlow(
   },
   async input => {
     // For this simple task, we can just look up the answer.
-    // An LLM would be useful for more complex hints, like "This letter often appears at the end of words."
+    // An LLM is not needed for this and adds unnecessary complexity and potential for errors.
     const decryptedLetter = input.solvedCipher[input.encryptedLetter];
     if (decryptedLetter) {
         return { decryptedLetter };
     }
 
-    // Fallback to LLM if lookup fails for some reason
-    const {output} = await generatePuzzleHintPrompt(input);
-    return output!;
+    // This should ideally not be reached if the input is always valid.
+    throw new Error(`Could not find a decrypted letter for encrypted letter: ${input.encryptedLetter}`);
   }
 );

@@ -39,46 +39,43 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
+  const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap), [letterToNumberMap]);
 
-  const giveInitialHint = useCallback(() => {
-    const allEncryptedLetters = Object.keys(solvedCipher);
-    if (allEncryptedLetters.length > 0) {
-      const shuffledLetters = [...allEncryptedLetters].sort(() => 0.5 - Math.random());
-      const numberOfHints = Math.min(3, shuffledLetters.length);
-      const newGuesses: Record<string, string> = {};
-      
-      for(let i = 0; i < numberOfHints; i++) {
-        const encryptedLetter = shuffledLetters[i];
-        const decryptedLetter = solvedCipher[encryptedLetter];
-        newGuesses[encryptedLetter] = decryptedLetter;
-      }
-      setUserGuesses(newGuesses);
+  const giveInitialHints = useCallback(() => {
+    const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
+    const numberOfHints = Math.min(3, shuffledLetters.length);
+    const newGuesses: Record<string, string> = {};
+    
+    for(let i = 0; i < numberOfHints; i++) {
+      const encryptedLetter = shuffledLetters[i];
+      const decryptedLetter = solvedCipher[encryptedLetter];
+      newGuesses[encryptedLetter] = decryptedLetter;
     }
-  }, [solvedCipher]);
+    setUserGuesses(newGuesses);
+  }, [puzzleEncryptedLetters, solvedCipher]);
 
   useEffect(() => {
     // Give hints when a new puzzle loads
-    giveInitialHint();
-  }, [puzzle.id, giveInitialHint]);
+    giveInitialHints();
+  }, [puzzle.id, giveInitialHints]);
 
   const checkSolution = useCallback(() => {
     if (isComplete) return;
-    const allEncryptedChars = Object.keys(letterToNumberMap);
-    const solved = allEncryptedChars.every(char => userGuesses[char] === solvedCipher[char]);
+    const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
     
     if (solved) {
       setIsComplete(true);
       setShowWinDialog(true);
       onGameComplete?.();
     }
-  }, [userGuesses, onGameComplete, solvedCipher, letterToNumberMap, isComplete]);
+  }, [userGuesses, onGameComplete, solvedCipher, puzzleEncryptedLetters, isComplete]);
 
   useEffect(() => {
     // Only check if all letters have a guess
-    if (Object.keys(userGuesses).length === Object.keys(letterToNumberMap).length) {
+    if (Object.keys(userGuesses).length === puzzleEncryptedLetters.length) {
       checkSolution();
     }
-  }, [userGuesses, checkSolution, letterToNumberMap]);
+  }, [userGuesses, checkSolution, puzzleEncryptedLetters]);
 
   const handleLetterSelect = (letter: string) => {
     if (isComplete) return;
@@ -104,7 +101,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const handleHint = () => {
     if (isComplete) return;
     
-    const unsolvedLetters = Object.keys(solvedCipher).filter(
+    const unsolvedLetters = puzzleEncryptedLetters.filter(
       (encrypted) => !userGuesses[encrypted] || userGuesses[encrypted] !== solvedCipher[encrypted]
     );
 
@@ -138,6 +135,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
           description: `The number '${letterToNumberMap[encrypted]}' is the letter '${decrypted}'.`,
         });
       } catch (error) {
+        console.error("Hint error:", error);
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -150,7 +148,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
   const handleReset = () => {
     setSelectedLetter(null);
     setIsComplete(false);
-    giveInitialHint(); // Reset to initial state with hints
+    giveInitialHints(); // Reset to initial state with hints
   };
 
   const usedLetters = Object.values(userGuesses);
