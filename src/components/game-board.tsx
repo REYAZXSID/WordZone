@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PageHeader } from './page-header';
+import { ThemeToggle } from './theme-toggle';
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -50,7 +51,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
     setSelectedLetter(null);
     setIsComplete(false);
     
-    // Give initial hints
     const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
     const numberOfHints = Math.min(3, shuffledLetters.length);
     const newGuesses: Record<string, string> = {};
@@ -97,7 +97,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
     
     const newGuesses = {...userGuesses};
     
-    // Clear previous uses of this guess
     for (const key in newGuesses) {
         if (newGuesses[key] === guess) {
             delete newGuesses[key];
@@ -138,7 +137,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
         const decrypted = result.decryptedLetter;
         
         const newGuesses = {...userGuesses};
-        // Clear previous uses of this guess
         for (const key in newGuesses) {
             if (newGuesses[key] === decrypted) {
                 delete newGuesses[key];
@@ -166,6 +164,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
 
   const renderHeaderActions = () => (
      <>
+        <ThemeToggle />
         <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
           <Lightbulb className="h-5 w-5" />
           <span className="sr-only">Hint</span>
@@ -196,7 +195,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
                                 onClick={() => handleLetterSelect(char)}
                                 className={cn(
                                   "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
-                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-card",
+                                  selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
                                   animateCorrect === char ? 'correct-guess-animation' : ''
                                 )}
                               >
