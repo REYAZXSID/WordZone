@@ -38,10 +38,6 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
         author: "OSCAR WILDE"
     },
     {
-        quote: "I THINK THEREFORE I AM",
-        author: "RENE DESCARTES"
-    },
-    {
         quote: "TIME IS MONEY",
         author: "BENJAMIN FRANKLIN"
     },
@@ -50,16 +46,32 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
         author: "MARTIN LUTHER KING"
     },
     {
+        quote: "KNOWLEDGE IS POWER",
+        author: "FRANCIS BACON"
+    },
+    {
         quote: "STAY HUNGRY STAY FOOLISH",
         author: "STEVE JOBS"
     },
     {
-        quote: "THE GREATEST GLORY IS NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL",
-        author: "NELSON MANDELA"
+        quote: "GO TO HELL",
+        author: "UNKNOWN"
     },
     {
-        quote: "KNOWLEDGE IS POWER",
-        author: "FRANCIS BACON"
+        quote: "NEVER GIVE UP",
+        author: "WINSTON CHURCHILL"
+    },
+    {
+        quote: "LOVE FOR ALL HATRED FOR NONE",
+        author: "KHALIFATUL MASIH III"
+    },
+    {
+        quote: "LEARNING NEVER ENDS",
+        author: "UNKNOWN"
+    },
+    {
+        quote: "THINK DIFFERENT",
+        author: "APPLE"
     }
 ];
 
@@ -71,7 +83,10 @@ const puzzleKeys = [
     "ASDFGHJKLQWERTYUIOPZXCVBNM",
     "POIUYTREWQLKJHGFDSAMNBVCXZ",
     "MNBVCXZASDFGHJKLPOIUYTREWQ",
-    "QAZWSXEDCRFVTGBYHNUJMIKOLP"
+    "QAZWSXEDCRFVTGBYHNUJMIKOLP",
+    "LKJHGFDSAPOIUYTREWQMNBVCXZ",
+    "AZSXDCFVGBHNJMKLIUYTREWQPO",
+    "YTREWQPOIUASDFGHJKLMNBVCXZ"
 ]
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
