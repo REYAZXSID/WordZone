@@ -9,6 +9,7 @@ import { Coins, Puzzle, Flame, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useSound } from '@/hooks/use-sound';
 
 type Mission = {
   id: string;
@@ -61,6 +62,7 @@ export default function MissionsPage() {
   const [claimedMissions, setClaimedMissions] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const { toast } = useToast();
+  const playSound = useSound();
 
   useEffect(() => {
     setIsClient(true);
@@ -102,6 +104,7 @@ export default function MissionsPage() {
     setClaimedMissions(newClaimed);
     localStorage.setItem('crypto_claimed_missions', JSON.stringify(newClaimed));
     
+    playSound('mission');
     toast({
       title: 'Reward Claimed!',
       description: `You earned ${mission.reward} coins!`,

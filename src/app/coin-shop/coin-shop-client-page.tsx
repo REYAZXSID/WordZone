@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useSound } from '@/hooks/use-sound';
 
 
 type CoinPack = {
@@ -38,6 +39,7 @@ export function CoinShopClientPage() {
   const [isClient, setIsClient] = useState(false);
   const [coins, setCoins] = useState(0);
   const { toast } = useToast();
+  const playSound = useSound();
 
   useEffect(() => {
     setIsClient(true);
@@ -54,6 +56,7 @@ export function CoinShopClientPage() {
     const newCoinBalance = coins + pack.amount;
     setCoins(newCoinBalance);
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
+    playSound('coin');
     
     toast({
       title: 'Purchase Successful!',
@@ -65,6 +68,7 @@ export function CoinShopClientPage() {
       const newCoinBalance = coins + option.reward;
       setCoins(newCoinBalance);
       localStorage.setItem('crypto_coins', newCoinBalance.toString());
+      playSound('coin');
       toast({
           title: 'Coins Claimed!',
           description: `You received ${option.reward} free coins!`,
@@ -73,7 +77,7 @@ export function CoinShopClientPage() {
   }
   
   const freeCoinOptions: FreeCoinOption[] = [
-      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 10, icon: <Video className="h-8 w-8 text-rose-500" />, action: () => {} },
+      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 10, icon: <Video className="h-8 w-8 text-rose-500" />, action: () => playSound('reward') },
       { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" />, action: () => {} },
       { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" />, action: () => {} }
   ]

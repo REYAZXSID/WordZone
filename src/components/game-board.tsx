@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PageHeader } from './page-header';
 import { ThemeToggle } from './theme-toggle';
+import { useSound } from '@/hooks/use-sound';
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -43,6 +44,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [animateCorrect, setAnimateCorrect] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [coinsEarned, setCoinsEarned] = useState(0);
+  const playSound = useSound();
 
   useEffect(() => setIsClient(true), []);
 
@@ -70,7 +72,8 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       }
     }
     setUserGuesses(newGuesses);
-  }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge]);
+    playSound('swoosh');
+  }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge, playSound]);
 
   useEffect(() => {
     resetGame(true);
@@ -97,6 +100,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         const newCoinBalance = coins + timeBonus;
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
+        playSound('coin');
         toast({
           title: 'Speed Bonus!',
           description: `Solved in under a minute! +${timeBonus} coins.`,
@@ -107,8 +111,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setCoinsEarned(totalReward);
     setIsComplete(true);
     setShowWinDialog(true);
+    playSound('victory');
     
-  }, [isComplete, onGameComplete, startTime, isDailyChallenge, toast]);
+  }, [isComplete, onGameComplete, startTime, isDailyChallenge, toast, playSound]);
 
   const checkSolution = useCallback(() => {
     const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
@@ -147,6 +152,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     if (newGuesses[selectedLetter] === solvedCipher[selectedLetter]) {
       setAnimateCorrect(selectedLetter);
       setTimeout(() => setAnimateCorrect(null), 500);
+      playSound('correct');
+    } else {
+      playSound('error');
     }
 
     setSelectedLetter(null);
@@ -182,13 +190,14 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         }
         newGuesses[encrypted] = decrypted;
         setUserGuesses(newGuesses);
-
+        playSound('powerup');
         toast({
           title: 'Hint Revealed!',
           description: `The number '${letterToNumberMap[encrypted]}' is the letter '${decrypted}'.`,
         });
       } catch (error) {
         console.error("Hint error:", error);
+        playSound('error');
         toast({
           variant: 'destructive',
           title: 'Error',

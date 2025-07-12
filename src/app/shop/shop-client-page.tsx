@@ -18,6 +18,7 @@ import {
     Package,
     Clapperboard
 } from 'lucide-react';
+import { useSound } from '@/hooks/use-sound';
 
 type PowerUp = {
   id: string;
@@ -43,6 +44,7 @@ export function ShopClientPage() {
   const [isClient, setIsClient] = useState(false);
   const [coins, setCoins] = useState(200); // Default starting coins
   const { toast } = useToast();
+  const playSound = useSound();
 
   useEffect(() => {
     setIsClient(true);
@@ -65,11 +67,13 @@ export function ShopClientPage() {
       inventory[powerUp.id] = (inventory[powerUp.id] || 0) + 1;
       localStorage.setItem('crypto_powerups', JSON.stringify(inventory));
       
+      playSound('purchase');
       toast({
         title: 'Purchase Successful!',
         description: `You bought ${powerUp.name}.`,
       });
     } else {
+      playSound('error');
       toast({
         variant: 'destructive',
         title: 'Insufficient Coins',
@@ -82,6 +86,7 @@ export function ShopClientPage() {
     const newCoinBalance = coins + 50;
     setCoins(newCoinBalance);
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
+     playSound('reward');
      toast({
         title: 'Coins Rewarded!',
         description: `You received 50 free coins.`,

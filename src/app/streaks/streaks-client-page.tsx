@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useSound } from '@/hooks/use-sound';
 
 
 type StreakMilestone = {
@@ -32,6 +33,7 @@ export function StreaksClientPage() {
     const [bestStreak, setBestStreak] = useState(0);
     const [claimedMilestones, setClaimedMilestones] = useState<number[]>([]);
     const { toast } = useToast();
+    const playSound = useSound();
 
     useEffect(() => {
         setIsClient(true);
@@ -92,7 +94,8 @@ export function StreaksClientPage() {
         const newClaimed = [...claimedMilestones, milestone.days];
         setClaimedMilestones(newClaimed);
         localStorage.setItem('crypto_claimed_streaks', JSON.stringify(newClaimed));
-
+        
+        playSound('coin');
         toast({
             title: 'Reward Claimed!',
             description: `You earned ${milestone.reward} coins for your ${milestone.days}-day streak!`,

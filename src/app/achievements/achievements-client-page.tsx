@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Medal, Puzzle, Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useSound } from '@/hooks/use-sound';
 
 export type Achievement = {
   id: string;
@@ -96,6 +97,7 @@ export function AchievementsClientPage() {
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
     const { toast } = useToast();
+    const playSound = useSound();
 
     useEffect(() => {
         setIsClient(true);
@@ -117,6 +119,7 @@ export function AchievementsClientPage() {
                     title: 'Achievement Unlocked!',
                     description: `You earned ${ach.reward} coins for completing "${ach.title}"!`,
                 });
+                playSound('achievement');
             }
         });
 
@@ -129,7 +132,7 @@ export function AchievementsClientPage() {
         }
         
         setAchievements(initialAchievements);
-    }, [toast]);
+    }, [toast, playSound]);
 
     const renderAchievementCard = (achievement: Achievement) => {
         const isCompleted = achievement.currentProgress >= achievement.targetProgress;

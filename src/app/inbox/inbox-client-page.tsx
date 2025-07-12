@@ -9,6 +9,7 @@ import { Gift, Coins, UserPlus, Star, CheckCircle, MailCheck } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { useSound } from '@/hooks/use-sound';
 
 type Reward = {
     id: string;
@@ -64,6 +65,7 @@ export function InboxClientPage() {
     const [isClient, setIsClient] = useState(false);
     const [rewards, setRewards] = useState<Reward[]>([]);
     const { toast } = useToast();
+    const playSound = useSound();
 
     useEffect(() => {
         setIsClient(true);
@@ -98,6 +100,7 @@ export function InboxClientPage() {
         );
         updateRewards(newRewards);
 
+        playSound('coin');
         toast({
             title: 'Reward Claimed!',
             description: `You received ${rewardToClaim.amount} coins!`,
@@ -131,7 +134,7 @@ export function InboxClientPage() {
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
         updateRewards(newRewards);
-
+        playSound('coin');
         toast({
             title: 'All Rewards Claimed!',
             description: `You received a total of ${totalClaimedAmount} coins!`,
