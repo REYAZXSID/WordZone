@@ -6,7 +6,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart } from 'lucide-react';
+import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -21,6 +21,8 @@ import { PageHeader } from './page-header';
 import { useSound } from '@/hooks/use-sound';
 import { PowerUpBar } from './power-up-bar';
 import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
+
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -253,54 +255,6 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
      }
   }
 
-
-  const handleHint = () => {
-    if (isComplete) return;
-    
-    const unsolvedLetters = puzzleEncryptedLetters.filter(
-      (encrypted) => !userGuesses[encrypted] || userGuesses[encrypted] !== solvedCipher[encrypted]
-    );
-
-    if (unsolvedLetters.length === 0) {
-      toast({ title: 'Puzzle Solved!', description: 'No more hints needed.' });
-      return;
-    }
-
-    const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
-
-    startTransition(async () => {
-      try {
-        const result = await generatePuzzleHint({
-          encryptedLetter: encrypted,
-          solvedCipher: solvedCipher,
-        });
-        const decrypted = result.decryptedLetter;
-        
-        const newGuesses = {...userGuesses};
-        for (const key in newGuesses) {
-            if (newGuesses[key] === decrypted) {
-                delete newGuesses[key];
-            }
-        }
-        newGuesses[encrypted] = decrypted;
-        setUserGuesses(newGuesses);
-        playSound('powerup');
-        toast({
-          title: 'Hint Revealed!',
-          description: `The number '${letterToNumberMap[encrypted]}' is the letter '${decrypted}'.`,
-        });
-      } catch (error) {
-        console.error("Hint error:", error);
-        playSound('error');
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not generate a hint at this time.',
-        });
-      }
-    });
-  };
-  
   const renderHeaderActions = () => (
     <div className="flex items-center gap-2">
       <Button asChild variant="ghost" size="icon">
@@ -330,6 +284,8 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
               <div key={wordIndex} className="flex gap-x-1">
                 {word.split('').map((char, charIndex) => {
                   if (ALPHABET.includes(char)) {
+                    const isCorrect = userGuesses[char] && solvedCipher[char] === userGuesses[char];
+                    const isIncorrect = userGuesses[char] && solvedCipher[char] !== userGuesses[char];
                     return (
                       <div
                         key={`${char}-${wordIndex}-${charIndex}`}
@@ -337,7 +293,8 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                         className={cn(
                           "flex h-12 w-9 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
                           selectedLetter === char ? "border-primary shadow-lg scale-105" : "border-input",
-                          userGuesses[char] && solvedCipher[char] === userGuesses[char] ? "bg-green-500/10 border-green-500/50" : "",
+                          isCorrect ? "bg-green-500/10 border-green-500/50" : "",
+                          isIncorrect ? "border-destructive" : "",
                           animateCorrect === char ? 'correct-guess-animation' : ''
                         )}
                       >
