@@ -43,10 +43,25 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [showWinDialog, setShowWinDialog] = useState(false);
   const [animateCorrect, setAnimateCorrect] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [coins, setCoins] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const playSound = useSound();
 
-  useEffect(() => setIsClient(true), []);
+  const updateCoins = useCallback(() => {
+    const savedCoins = localStorage.getItem('crypto_coins');
+    setCoins(parseInt(savedCoins || '200', 10));
+  }, []);
+
+  useEffect(() => {
+    setIsClient(true);
+    updateCoins();
+    
+    window.addEventListener('storage', updateCoins);
+    return () => {
+      window.removeEventListener('storage', updateCoins);
+    };
+  }, [updateCoins]);
+
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
@@ -96,8 +111,8 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         const timeBonus = 5;
         totalReward += timeBonus;
         
-        const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-        const newCoinBalance = coins + timeBonus;
+        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+        const newCoinBalance = currentCoins + timeBonus;
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
         playSound('coin');
@@ -226,8 +241,13 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
 
   return (
     <>
-      <PageHeader title={isDailyChallenge ? 'Daily Puzzle' : `Level ${level}`} actions={renderHeaderActions()} />
-      <main className="flex flex-1 flex-col items-center justify-start p-4 md:p-6">
+      <PageHeader
+        title={isDailyChallenge ? 'Daily Puzzle' : `Level ${level}`}
+        actions={renderHeaderActions()}
+        coins={coins}
+        isClient={isClient}
+      />
+      <main className="flex flex-1 flex-col items-center justify-between p-4 md:p-6">
         <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-start pt-4">
           <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {
