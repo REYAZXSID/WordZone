@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Flame, Calendar, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 const puzzle = getDailyPuzzle();
 
@@ -16,6 +17,7 @@ export default function DailyPage() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -88,6 +90,15 @@ export default function DailyPage() {
     }
     return 0; // No reward if already completed today
   };
+  
+  const handleMainMenu = () => {
+    router.push('/game/category');
+  };
+  
+  const handlePlayAgain = () => {
+    // For daily puzzle, this can just reload the page or reset state
+    window.location.reload();
+  }
 
   const renderStats = () => {
     if (!isClient) {
@@ -131,7 +142,13 @@ export default function DailyPage() {
       <div className="flex justify-between items-center p-4">
         {renderStats()}
       </div>
-      <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} isDailyChallenge={true} />
+      <GameBoard 
+        puzzle={puzzle} 
+        onGameComplete={handleGameComplete} 
+        isDailyChallenge={true}
+        onMainMenu={handleMainMenu}
+        onPlayAgain={handlePlayAgain}
+      />
     </div>
   );
 }

@@ -90,7 +90,7 @@ export function GameScreen() {
   };
 
   const handleMainMenu = () => {
-    router.push('/');
+    router.push('/game/category');
   }
 
   if (!isClient || !puzzle) {
