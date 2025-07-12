@@ -1,8 +1,9 @@
+
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart, BarChart3, BarChart4, ChevronRight } from 'lucide-react';
+import { BarChart, BarChart3, BarChart4, ChevronRight, TrendingUp, AreaChart } from 'lucide-react';
 import type { Difficulty } from '@/lib/puzzles';
 
 type Category = {
@@ -23,17 +24,31 @@ const categories: Category[] = [
   },
   {
     name: 'Medium',
-    description: '16-20 letters',
+    description: '16-29 letters',
     href: '/game/medium',
     icon: <BarChart3 className="h-8 w-8 text-yellow-500" />,
     difficulty: 'medium',
   },
   {
     name: 'Hard',
-    description: '21+ letters',
+    description: '30-40 letters',
     href: '/game/hard',
     icon: <BarChart4 className="h-8 w-8 text-red-500" />,
     difficulty: 'hard',
+  },
+  {
+    name: 'Intermediate',
+    description: '30+ letters',
+    href: '/game/intermediate',
+    icon: <TrendingUp className="h-8 w-8 text-orange-500" />,
+    difficulty: 'intermediate',
+  },
+   {
+    name: 'Advance',
+    description: '40+ letters',
+    href: '/game/advance',
+    icon: <AreaChart className="h-8 w-8 text-purple-500" />,
+    difficulty: 'advance',
   },
 ];
 
