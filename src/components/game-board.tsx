@@ -87,13 +87,13 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     if (!isDailyChallenge) {
         switch(puzzle.difficulty) {
             case 'easy':
-                numberOfHints = 2;
+                numberOfHints = 4;
                 break;
             case 'medium':
-                numberOfHints = 1;
+                numberOfHints = 3;
                 break;
             case 'hard':
-                numberOfHints = 0;
+                numberOfHints = 2;
                 break;
         }
     }
@@ -134,7 +134,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setShowWinDialog(true);
     playSound('victory');
     
-  }, [isComplete, onGameComplete, startTime, toast, playSound]);
+  }, [isComplete, onGameComplete, startTime, playSound]);
 
   const checkSolution = useCallback(() => {
     const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
