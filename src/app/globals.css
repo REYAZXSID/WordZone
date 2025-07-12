@@ -384,4 +384,7 @@ body {
   animation: scanline-animation 8s linear infinite;
 }
 
-    
+.neon-heart {
+  filter: drop-shadow(0 0 5px hsl(var(--destructive))) drop-shadow(0 0 10px hsl(var(--destructive)));
+}
+

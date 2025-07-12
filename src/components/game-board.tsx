@@ -276,7 +276,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
             key={i}
             className={cn(
               "h-6 w-6 transition-all",
-              i < lives ? "text-red-500 fill-red-500" : "text-muted-foreground/50"
+              i < lives ? "text-red-500 fill-red-500 neon-heart" : "text-muted-foreground/50"
             )}
           />
         ))}
