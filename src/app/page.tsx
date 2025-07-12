@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Menu, ArrowRight, Settings, BookOpen, User, Puzzle } from 'lucide-react';
+import { Menu, ArrowRight, BookOpen, User, Puzzle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -32,7 +32,7 @@ export default function Home() {
 
       <main className="flex flex-1 items-center justify-center z-0">
         <div className="flex flex-col items-center text-center p-6">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary breathing-icon-animation">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
             <Puzzle className="h-12 w-12" />
           </div>
           <h1 className="text-6xl font-bold tracking-tight">

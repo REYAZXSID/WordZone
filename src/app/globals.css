@@ -126,13 +126,20 @@ body {
   animation: pulse-success 2s infinite;
 }
 
-@keyframes breathing-icon {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+@keyframes float-rotate {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
-.breathing-icon-animation {
-  animation: breathing-icon 4s ease-in-out infinite;
+.float-rotate-animation {
+  animation: float-rotate 8s ease-in-out infinite;
 }
 
 @keyframes glow-effect {
