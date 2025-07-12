@@ -12,9 +12,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
+
+const themes = [
+    { name: "Light", value: "light", icon: Sun },
+    { name: "Dark", value: "dark", icon: Moon },
+    { name: "Neon", value: "neon", icon: Sparkles },
+    { name: "Pink Blossom", value: "pink-blossom", icon: Flower2 },
+    { name: "Classic Mystery", value: "classic-mystery", icon: BookOpen },
+    { name: "Hacker Green", value: "hacker-green", icon: Terminal },
+    { name: "Playful Light", value: "playful-light", icon: Paintbrush },
+    { name: "Zen Minimal", value: "zen-minimal", icon: Wind },
+    { name: "Retro Arcade", value: "retro-arcade", icon: Gamepad2 },
+];
+
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -25,46 +39,26 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" />
-          <span>Light</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" />
-          <span>Dark</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("neon")}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          <span>Neon</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("pink-blossom")}>
-          <Flower2 className="mr-2 h-4 w-4" />
-          <span>Pink Blossom</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("classic-mystery")}>
-          <BookOpen className="mr-2 h-4 w-4" />
-          <span>Classic Mystery</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("hacker-green")}>
-          <Terminal className="mr-2 h-4 w-4" />
-          <span>Hacker Green</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("playful-light")}>
-          <Paintbrush className="mr-2 h-4 w-4" />
-          <span>Playful Light</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("zen-minimal")}>
-          <Wind className="mr-2 h-4 w-4" />
-          <span>Zen Minimal</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("retro-arcade")}>
-          <Gamepad2 className="mr-2 h-4 w-4" />
-          <span>Retro Arcade</span>
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="p-2 w-64">
+        <div className="grid grid-cols-3 gap-2">
+            {themes.map((item) => {
+                const Icon = item.icon;
+                return (
+                    <button
+                        key={item.value}
+                        onClick={() => setTheme(item.value)}
+                        className={cn(
+                            "flex flex-col items-center justify-center gap-2 rounded-md p-2 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                            theme === item.value && "bg-accent"
+                        )}
+                    >
+                        <Icon className="h-5 w-5" />
+                        <span>{item.name}</span>
+                    </button>
+                )
+            })}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )
 }
-
-    
