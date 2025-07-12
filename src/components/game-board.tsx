@@ -185,8 +185,6 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
       <main className="flex-1 flex flex-col items-center justify-start p-4 gap-8 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
-          <div className="w-full text-center mb-6">
-          </div>
           <div className="flex flex-wrap justify-center gap-x-3 gap-y-4">
             {puzzle.text.split(' ').map((word, wordIndex) => (
               <div key={`word-${wordIndex}`} className="flex flex-nowrap items-center gap-1.5">
@@ -222,13 +220,13 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
         </div>
 
         <div className="w-full max-w-md mx-auto p-2 rounded-lg bg-card/50 mt-auto mb-12">
-           <div className="grid grid-cols-7 gap-2 justify-center">
+           <div className="grid grid-cols-7 gap-2 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
                 variant={usedLetters.includes(letter) ? 'outline' : 'default'}
-                size="sm"
-                className="h-14 w-full p-0 text-base font-bold"
+                size="lg"
+                className="h-14 w-14 p-0 text-base font-bold"
                 onClick={() => handleKeyboardInput(letter)}
                 disabled={!selectedLetter || usedLetters.includes(letter) || isComplete}
               >
@@ -242,17 +240,22 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
       {isClient && (
         <AlertDialog open={showWinDialog} onOpenChange={setShowWinDialog}>
           <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2 text-2xl">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+            <AlertDialogHeader className="items-center text-center">
+               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 animate-pulse-success">
+                  <CheckCircle className="h-10 w-10 text-green-500" />
+              </div>
+              <AlertDialogTitle className="text-2xl">
                 Congratulations!
               </AlertDialogTitle>
               <AlertDialogDescription>
-                <div>
-                   <p>You've successfully decoded the quote:</p>
-                  <blockquote className="mt-2 border-l-2 border-primary pl-4 italic">
+                <div className="space-y-2">
+                  <p>You've successfully decoded the quote:</p>
+                  <blockquote className="border-l-2 border-primary pl-4 italic">
                     "{puzzle.quote}"
                   </blockquote>
+                   <p className="text-right text-sm text-muted-foreground/80 not-italic">
+                    &mdash; {puzzle.author}
+                  </p>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
