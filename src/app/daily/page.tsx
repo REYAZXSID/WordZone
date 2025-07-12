@@ -93,48 +93,32 @@ export default function DailyPage() {
     if (!isClient) {
       return (
         <>
-          <Card className="w-full md:w-auto">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Skeleton className="h-8 w-8" />
-              <div>
-                <Skeleton className="h-6 w-8 mb-1" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-            </CardContent>
-          </Card>
-           <Card className="w-full md:w-auto">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Skeleton className="h-8 w-8" />
-              <div>
-                <Skeleton className="h-6 w-24 mb-1" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </CardContent>
-          </Card>
+          <Skeleton className="h-20 w-40" />
+          <Skeleton className="h-20 w-40" />
         </>
       );
     }
     return (
       <>
-        <Card className="w-full md:w-auto">
-          <CardContent className="flex items-center gap-4 p-4">
-            <Flame className="h-8 w-8 text-orange-500" />
+        <Card>
+          <CardContent className="flex items-center gap-3 p-3">
+            <Flame className="h-7 w-7 text-orange-500" />
             <div>
-              <div className="font-bold text-xl">{streak}</div>
-              <div className="text-sm text-muted-foreground">Day Streak</div>
+              <div className="font-bold text-lg">{streak}</div>
+              <div className="text-xs text-muted-foreground">Day Streak</div>
             </div>
           </CardContent>
         </Card>
-        <Card className="w-full md:w-auto">
-          <CardContent className="flex items-center gap-4 p-4">
-            <Calendar className="h-8 w-8 text-primary" />
+        <Card>
+          <CardContent className="flex items-center gap-3 p-3">
+            <Calendar className="h-7 w-7 text-primary" />
             <div>
-              <div className="font-bold text-xl tabular-nums">
+              <div className="font-bold text-lg tabular-nums">
                   {String(timeLeft.hours).padStart(2, '0')}:
                   {String(timeLeft.minutes).padStart(2, '0')}:
                   {String(timeLeft.seconds).padStart(2, '0')}
               </div>
-              <div className="text-sm text-muted-foreground">Next Puzzle In</div>
+              <div className="text-xs text-muted-foreground">Next Puzzle In</div>
             </div>
           </CardContent>
         </Card>
@@ -144,12 +128,10 @@ export default function DailyPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="w-full">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 p-4 md:flex-row md:justify-center md:p-6">
-          {renderStats()}
-        </div>
-        <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} isDailyChallenge={true} />
+      <div className="flex justify-between items-center p-4">
+        {renderStats()}
       </div>
+      <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} isDailyChallenge={true} />
     </div>
   );
 }
