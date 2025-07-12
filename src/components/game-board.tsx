@@ -20,6 +20,7 @@ import {
 import { PageHeader } from './page-header';
 import { ThemeToggle } from './theme-toggle';
 import { useSound } from '@/hooks/use-sound';
+import { PowerUpBar } from './power-up-bar';
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -46,27 +47,37 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [coins, setCoins] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const playSound = useSound();
+  const [powerUpInventory, setPowerUpInventory] = useState<Record<string, number>>({});
 
   const updateCoins = useCallback(() => {
     const savedCoins = localStorage.getItem('crypto_coins');
     setCoins(parseInt(savedCoins || '200', 10));
   }, []);
 
+  const updatePowerUpInventory = useCallback(() => {
+     const inventory = JSON.parse(localStorage.getItem('crypto_powerups') || '{}');
+     setPowerUpInventory(inventory);
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     updateCoins();
+    updatePowerUpInventory();
     
     // Listen for storage changes to keep coins in sync across tabs/components
     const handleStorageChange = (e: StorageEvent) => {
         if (e.key === 'crypto_coins') {
             updateCoins();
         }
+        if (e.key === 'crypto_powerups') {
+            updatePowerUpInventory();
+        }
     }
     window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [updateCoins]);
+  }, [updateCoins, updatePowerUpInventory]);
 
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
@@ -182,6 +193,60 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
 
     setSelectedLetter(null);
   };
+  
+  const handleUsePowerUp = (powerUpId: string) => {
+     const inventory = JSON.parse(localStorage.getItem('crypto_powerups') || '{}');
+     if (!inventory[powerUpId] || inventory[powerUpId] <= 0) return;
+
+     let success = false;
+     let toastTitle = '';
+     let toastDescription = '';
+
+     if (powerUpId === 'reveal_letter' || powerUpId === 'auto_fill') {
+        const unsolvedLetters = puzzleEncryptedLetters.filter(
+          (encrypted) => !userGuesses[encrypted] || userGuesses[encrypted] !== solvedCipher[encrypted]
+        );
+        if (unsolvedLetters.length > 0) {
+            const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
+            const decrypted = solvedCipher[encrypted];
+            
+            const newGuesses = {...userGuesses};
+            for (const key in newGuesses) {
+                if (newGuesses[key] === decrypted) delete newGuesses[key];
+            }
+            newGuesses[encrypted] = decrypted;
+            setUserGuesses(newGuesses);
+            
+            success = true;
+            toastTitle = 'Letter Revealed!';
+            toastDescription = `The letter '${decrypted}' has been placed.`;
+        }
+     } else if (powerUpId === 'remove_wrong') {
+        const wrongGuesses = Object.entries(userGuesses).filter(([enc, dec]) => solvedCipher[enc] !== dec);
+        if (wrongGuesses.length > 0) {
+            const newGuesses = { ...userGuesses };
+            for (let i = 0; i < Math.min(3, wrongGuesses.length); i++) {
+                delete newGuesses[wrongGuesses[i][0]];
+            }
+            setUserGuesses(newGuesses);
+            success = true;
+            toastTitle = 'Wrong Guesses Removed!';
+            toastDescription = `Up to 3 incorrect guesses cleared.`;
+        }
+     }
+     
+     if (success) {
+        inventory[powerUpId] -= 1;
+        localStorage.setItem('crypto_powerups', JSON.stringify(inventory));
+        updatePowerUpInventory();
+        playSound('powerup');
+        toast({ title: toastTitle, description: toastDescription });
+     } else {
+        playSound('error');
+        toast({ variant: 'destructive', title: 'Cannot Use Power-Up', description: 'No eligible letters to apply this power-up.' });
+     }
+  }
+
 
   const handleHint = () => {
     if (isComplete) return;
@@ -287,21 +352,29 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
           </div>
         </div>
 
-        <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
-           <div className="grid grid-cols-7 gap-1.5 justify-items-center">
-            {ALPHABET.map((letter) => (
-              <Button
-                key={letter}
-                variant={usedLetters.includes(letter) ? 'outline' : 'default'}
-                size="sm"
-                className="h-10 w-full p-0 text-sm font-bold"
-                onClick={() => handleKeyboardInput(letter)}
-                disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete}
-              >
-                {letter}
-              </Button>
-            ))}
-          </div>
+        <div className="w-full max-w-2xl mx-auto space-y-4">
+            <PowerUpBar
+                inventory={powerUpInventory}
+                onUsePowerUp={handleUsePowerUp}
+                disabled={isComplete}
+            />
+
+            <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
+               <div className="grid grid-cols-7 gap-1.5 justify-items-center">
+                {ALPHABET.map((letter) => (
+                  <Button
+                    key={letter}
+                    variant={usedLetters.includes(letter) ? 'outline' : 'default'}
+                    size="sm"
+                    className="h-10 w-full p-0 text-sm font-bold"
+                    onClick={() => handleKeyboardInput(letter)}
+                    disabled={!selectedLetter || (usedLetters.includes(letter) && userGuesses[selectedLetter] !== letter) || isComplete}
+                  >
+                    {letter}
+                  </Button>
+                ))}
+              </div>
+            </div>
         </div>
       </main>
 
