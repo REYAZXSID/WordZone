@@ -414,24 +414,26 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                 </AlertDialogDescription>
               </div>
             </AlertDialogHeader>
-            <AlertDialogFooter className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full mt-4">
-                <Button variant="outline" onClick={() => { if(onPlayAgain) onPlayAgain(); }}>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Play Again
-                </Button>
-                 <Button variant="secondary" onClick={() => { if(onMainMenu) onMainMenu(); }}>
+            <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
+                <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" onClick={() => { if(onPlayAgain) onPlayAgain(); }}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Play Again
+                    </Button>
+                    {!isDailyChallenge && (
+                      <Button 
+                        onClick={() => { if(onNextLevel) onNextLevel(); }}
+                        disabled={level && level >= 50}
+                      >
+                        Next Level
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    )}
+                </div>
+                 <Button variant="secondary" onClick={() => { if(onMainMenu) onMainMenu(); }} className="w-full">
                   <Home className="mr-2 h-4 w-4" />
                   Main Menu
                 </Button>
-                {!isDailyChallenge && (
-                  <Button 
-                    onClick={() => { if(onNextLevel) onNextLevel(); }}
-                    disabled={level && level >= 50}
-                  >
-                    Next Level
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
