@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-          themes={['light', 'dark', 'neon', 'pink-blossom']}
+          themes={['light', 'dark', 'neon', 'pink-blossom', 'classic-mystery', 'hacker-green', 'playful-light', 'zen-minimal', 'retro-arcade']}
         >
           {children}
           <Toaster />

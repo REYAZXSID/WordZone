@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, Flower2 } from "lucide-react"
+import { Moon, Sun, Sparkles, Flower2, BookOpen, Terminal, Paintbrush, Wind, Gamepad2 } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,26 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("pink-blossom")}>
           <Flower2 className="mr-2 h-4 w-4" />
           <span>Pink Blossom</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("classic-mystery")}>
+          <BookOpen className="mr-2 h-4 w-4" />
+          <span>Classic Mystery</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("hacker-green")}>
+          <Terminal className="mr-2 h-4 w-4" />
+          <span>Hacker Green</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("playful-light")}>
+          <Paintbrush className="mr-2 h-4 w-4" />
+          <span>Playful Light</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("zen-minimal")}>
+          <Wind className="mr-2 h-4 w-4" />
+          <span>Zen Minimal</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("retro-arcade")}>
+          <Gamepad2 className="mr-2 h-4 w-4" />
+          <span>Retro Arcade</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
