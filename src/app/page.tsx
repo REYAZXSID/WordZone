@@ -1,11 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Puzzle, Settings, Calendar } from 'lucide-react';
+import { Puzzle, Settings, Calendar, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/menu">
+            <MoreVertical className="h-6 w-6" />
+            <span className="sr-only">Menu</span>
+          </Link>
+        </Button>
+      </div>
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
