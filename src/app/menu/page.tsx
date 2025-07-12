@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -35,11 +35,17 @@ const menuItems: MenuItem[] = [
     href: '/achievements',
     icon: <Star className="h-8 w-8 text-yellow-400" />,
   },
+   {
+    name: 'Power-Up Shop',
+    description: 'Purchase hints and helpful items.',
+    href: '/shop',
+    icon: <ShoppingCart className="h-8 w-8 text-green-500" />,
+  },
   {
-    name: 'Profile',
-    description: 'View your stats and progress.',
-    href: '/profile',
-    icon: <User className="h-8 w-8 text-primary" />,
+    name: 'Coin Shop',
+    description: 'Get more coins to spend.',
+    href: '/coin-shop',
+    icon: <CoinsIcon className="h-8 w-8 text-yellow-500" />,
   },
   {
     name: 'Leaderboard',
@@ -48,10 +54,10 @@ const menuItems: MenuItem[] = [
     icon: <Trophy className="h-8 w-8 text-yellow-500" />,
   },
   {
-    name: 'Shop',
-    description: 'Purchase new themes and hints.',
-    href: '/shop',
-    icon: <ShoppingCart className="h-8 w-8 text-green-500" />,
+    name: 'Profile',
+    description: 'View your stats and progress.',
+    href: '/profile',
+    icon: <User className="h-8 w-8 text-primary" />,
   },
 ];
 
