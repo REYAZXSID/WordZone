@@ -94,3 +94,12 @@ export const invertCipher = (cipher: Record<string, string>): Record<string, str
     return acc;
   }, {} as Record<string, string>);
 };
+
+export const getCipherLetterToNumberMap = (encryptedText: string): Record<string, number> => {
+    const uniqueLetters = [...new Set(encryptedText.split('').filter(c => /[A-Z]/.test(c)))].sort();
+    const map: Record<string, number> = {};
+    uniqueLetters.forEach((letter, index) => {
+        map[letter] = index + 1;
+    });
+    return map;
+}

@@ -3,8 +3,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for generating hints for a substitution cipher puzzle.
  *
- * It takes the encrypted puzzle text and the solved substitution cipher as input, and outputs a hint revealing one correct letter.
- * The hint is formatted as the encrypted letter and its corresponding decrypted letter.
+ * It takes an encrypted letter and the solved substitution cipher as input, and outputs the decrypted letter.
  *
  * @interface GeneratePuzzleHintInput - The input type for the generatePuzzleHint function.
  * @interface GeneratePuzzleHintOutput - The output type for the generatePuzzleHint function.
@@ -15,14 +14,14 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GeneratePuzzleHintInputSchema = z.object({
-  encryptedPuzzle: z.string().describe('The encrypted puzzle text.'),
+  encryptedLetter: z.string().describe('The single encrypted letter to get a hint for.'),
   solvedCipher: z.record(z.string(), z.string()).describe('The solved substitution cipher as a JSON object. Keys are encrypted letters, values are decrypted letters.'),
 });
 
 export type GeneratePuzzleHintInput = z.infer<typeof GeneratePuzzleHintInputSchema>;
 
 const GeneratePuzzleHintOutputSchema = z.object({
-  hint: z.string().describe('A hint revealing one correct letter in the substitution cipher, formatted as \'EncryptedLetter: DecryptedLetter\'.'),
+  decryptedLetter: z.string().describe('The decrypted letter corresponding to the encrypted letter.'),
 });
 
 export type GeneratePuzzleHintOutput = z.infer<typeof GeneratePuzzleHintOutputSchema>;
@@ -37,13 +36,12 @@ const generatePuzzleHintPrompt = ai.definePrompt({
   output: {schema: GeneratePuzzleHintOutputSchema},
   prompt: `You are a puzzle master helping users solve substitution cipher puzzles.
 
-  Given the encrypted puzzle and the solved cipher, provide a hint that reveals one correct letter.
-  The hint should be formatted as "EncryptedLetter: DecryptedLetter".
-
-  Encrypted Puzzle: {{{encryptedPuzzle}}}
+  Given an encrypted letter and the solved cipher, provide the decrypted letter.
+  
+  Encrypted Letter: {{{encryptedLetter}}}
   Solved Cipher: {{JSON.stringify solvedCipher}}
 
-  HINT:
+  Provide only the decrypted letter as the output.
   `,
 });
 
@@ -54,6 +52,14 @@ const generatePuzzleHintFlow = ai.defineFlow(
     outputSchema: GeneratePuzzleHintOutputSchema,
   },
   async input => {
+    // For this simple task, we can just look up the answer.
+    // An LLM would be useful for more complex hints, like "This letter often appears at the end of words."
+    const decryptedLetter = input.solvedCipher[input.encryptedLetter];
+    if (decryptedLetter) {
+        return { decryptedLetter };
+    }
+
+    // Fallback to LLM if lookup fails for some reason
     const {output} = await generatePuzzleHintPrompt(input);
     return output!;
   }

@@ -1,12 +1,12 @@
 'use client';
 
 import type { Puzzle } from '@/lib/puzzles';
-import { invertCipher } from '@/lib/puzzles';
+import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
-import React, { useState, useTransition, useEffect, useCallback } from 'react';
+import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Lightbulb, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
+import { Lightbulb, RotateCcw, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -37,22 +37,27 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
 
   useEffect(() => setIsClient(true), []);
 
-  const solvedCipher = invertCipher(puzzle.cipher);
+  const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
+  const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
 
   const checkSolution = useCallback(() => {
-    const solvedText = puzzle.text.split('').map(char => userGuesses[char] || ' ').join('');
-    if (solvedText === puzzle.quote) {
+    if (isComplete) return;
+    const allEncryptedChars = Object.keys(letterToNumberMap);
+    const solved = allEncryptedChars.every(char => userGuesses[char] === solvedCipher[char]);
+    
+    if (solved) {
       setIsComplete(true);
       setShowWinDialog(true);
       onGameComplete?.();
     }
-  }, [puzzle.text, puzzle.quote, userGuesses, onGameComplete]);
+  }, [puzzle.text, userGuesses, onGameComplete, solvedCipher, letterToNumberMap, isComplete]);
 
   useEffect(() => {
-    if (Object.keys(userGuesses).length > 0) {
+    // Only check if all letters have a guess
+    if (Object.keys(userGuesses).length === Object.keys(letterToNumberMap).length) {
       checkSolution();
     }
-  }, [userGuesses, checkSolution]);
+  }, [userGuesses, checkSolution, letterToNumberMap]);
 
   const handleLetterSelect = (letter: string) => {
     if (isComplete) return;
@@ -61,25 +66,55 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
 
   const handleKeyboardInput = (guess: string) => {
     if (!selectedLetter || isComplete) return;
-    setUserGuesses((prev) => ({
-      ...prev,
-      [selectedLetter]: guess,
-    }));
+    
+    const newGuesses = {...userGuesses};
+    
+    // Clear previous use of this letter if any
+    for (const key in newGuesses) {
+        if (newGuesses[key] === guess) {
+            delete newGuesses[key];
+        }
+    }
+
+    newGuesses[selectedLetter] = guess;
+    setUserGuesses(newGuesses);
   };
 
   const handleHint = () => {
     if (isComplete) return;
+    
+    const unsolvedLetters = Object.keys(solvedCipher).filter(
+      (encrypted) => !userGuesses[encrypted] || userGuesses[encrypted] !== solvedCipher[encrypted]
+    );
+
+    if (unsolvedLetters.length === 0) {
+      toast({ title: 'Puzzle Solved!', description: 'No more hints needed.' });
+      return;
+    }
+
+    const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
+
     startTransition(async () => {
       try {
         const result = await generatePuzzleHint({
-          encryptedPuzzle: puzzle.text,
+          encryptedLetter: encrypted,
           solvedCipher: solvedCipher,
         });
-        const [encrypted, decrypted] = result.hint.split(': ');
-        setUserGuesses((prev) => ({ ...prev, [encrypted]: decrypted }));
+        const decrypted = result.decryptedLetter;
+        
+        const newGuesses = {...userGuesses};
+        // Clear previous assignment of this decrypted letter
+        for (const key in newGuesses) {
+            if (newGuesses[key] === decrypted) {
+                delete newGuesses[key];
+            }
+        }
+        newGuesses[encrypted] = decrypted;
+        setUserGuesses(newGuesses);
+
         toast({
           title: 'Hint Revealed!',
-          description: `The letter '${encrypted}' is '${decrypted}'.`,
+          description: `The number '${letterToNumberMap[encrypted]}' is the letter '${decrypted}'.`,
         });
       } catch (error) {
         toast({
@@ -112,7 +147,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {
               if (ALPHABET.includes(char)) {
                 return (
@@ -122,24 +157,30 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
                     className={cn(
                       "flex h-16 w-12 cursor-pointer flex-col items-center justify-center rounded-md border-2 bg-card font-mono text-xl transition-all",
                       selectedLetter === char ? "border-primary shadow-lg" : "border-input",
-                      userGuesses[char] && letterIsCorrect(char) ? 'bg-accent/30' : '',
+                      userGuesses[char] && letterIsCorrect(char) ? 'bg-green-500/20' : '',
                        isComplete && letterIsCorrect(char) ? 'correct-guess-animation' : ''
                     )}
                   >
-                    <div className="text-muted-foreground">{char}</div>
+                    <div className="text-muted-foreground text-sm">{letterToNumberMap[char]}</div>
                     <div className="text-2xl font-bold text-foreground">
                       {userGuesses[char] || ''}
                     </div>
                   </div>
                 );
               }
+              if (char === ' ') {
+                 return <div key={`space-${index}`} className="w-4 flex-shrink-0" />;
+              }
               return (
-                <div key={`space-${index}`} className="w-4 flex-shrink-0" />
+                 <div key={`char-${index}`} className="flex h-16 w-8 items-end justify-center pb-1 text-2xl font-bold">
+                    {char}
+                 </div>
               );
             })}
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-4">
+           <div className="text-sm text-muted-foreground">Click a box above, then a letter below to guess.</div>
           <div className="grid grid-cols-7 gap-2 md:grid-cols-13 md:gap-2">
             {ALPHABET.map((letter) => (
               <Button
@@ -171,7 +212,7 @@ export function GameBoard({ puzzle, onGameComplete }: GameBoardProps) {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-2xl">
-                <CheckCircle className="h-8 w-8 text-accent-foreground" />
+                <CheckCircle className="h-8 w-8 text-green-500" />
                 Congratulations!
               </AlertDialogTitle>
               <AlertDialogDescription className="text-md py-4">
