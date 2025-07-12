@@ -21,12 +21,6 @@ export default function Home() {
             <span className="sr-only">Login</span>
           </Link>
         </Button>
-        <Button asChild variant="ghost" size="icon">
-            <Link href="/settings">
-                <Settings className="h-6 w-6" />
-                <span className="sr-only">Settings</span>
-            </Link>
-        </Button>
         <ThemeToggle />
         <Button asChild variant="ghost" size="icon">
           <Link href="/menu">
