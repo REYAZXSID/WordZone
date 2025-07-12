@@ -19,7 +19,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PageHeader } from './page-header';
-import { ThemeToggle } from './theme-toggle';
 
 type GameBoardProps = {
   puzzle: Puzzle;
@@ -158,34 +157,34 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
       }
     });
   };
+  
+  const renderHeaderActions = () => (
+    <div className="flex items-center gap-2">
+      <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
+        <Lightbulb className="h-5 w-5" />
+        <span className="sr-only">Hint</span>
+      </Button>
+      <Button onClick={resetGame} variant="ghost" size="icon">
+        <RotateCcw className="h-5 w-5" />
+        <span className="sr-only">Reset</span>
+      </Button>
+    </div>
+  );
+
 
   const usedLetters = Object.values(userGuesses);
 
-  const renderHeaderActions = () => (
-     <>
-        <ThemeToggle />
-        <Button onClick={handleHint} disabled={isPending || isComplete} variant="ghost" size="icon">
-          <Lightbulb className="h-5 w-5" />
-          <span className="sr-only">Hint</span>
-        </Button>
-        <Button onClick={resetGame} variant="ghost" size="icon">
-          <RotateCcw className="h-5 w-5" />
-          <span className="sr-only">Reset</span>
-        </Button>
-      </>
-  );
-
   return (
     <>
-      <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-4 md:p-6">
+      <PageHeader title="Decode the Quote" actions={onNewGame ? renderHeaderActions() : undefined} />
+      <main className="flex-1 flex flex-col items-center justify-start p-4 gap-8 md:p-6">
         <div className="w-full max-w-4xl flex flex-col items-center">
-          <div className="w-full text-center mb-4">
-             <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
+          <div className="w-full text-center mb-6">
+             <p className="text-sm text-muted-foreground tracking-wider">"{puzzle.author}"</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
+          <div className="flex flex-wrap justify-center gap-x-3 gap-y-4">
             {puzzle.text.split(' ').map((word, wordIndex) => (
-              <div key={`word-${wordIndex}`} className="flex flex-nowrap items-center gap-1">
+              <div key={`word-${wordIndex}`} className="flex flex-nowrap items-center gap-1.5">
                 {word.split('').map((char, charIndex) => {
                   if (ALPHABET.includes(char)) {
                     return (
@@ -217,8 +216,8 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-lg p-2 rounded-lg bg-card/50 mt-auto mb-4">
-           <div className="grid grid-cols-9 gap-2 justify-items-center">
+        <div className="w-full max-w-lg p-2 rounded-lg bg-card/50 mt-auto mb-12">
+           <div className="grid grid-cols-9 gap-2 md:gap-3 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
