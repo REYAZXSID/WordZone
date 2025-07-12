@@ -311,37 +311,14 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
      }
   }
 
-  const renderHeaderActions = () => (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-1">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Heart
-            key={i}
-            className={cn(
-              "h-6 w-6 transition-all",
-              i < lives ? "text-red-500 fill-red-500 neon-heart" : "text-muted-foreground/50"
-            )}
-          />
-        ))}
-      </div>
-      <Button asChild variant="ghost" size="icon">
-        <Link href="/shop">
-          <ShoppingCart className="h-5 w-5" />
-          <span className="sr-only">Shop</span>
-        </Link>
-      </Button>
-    </div>
-  );
-
-
   const usedLetters = Object.values(userGuesses);
 
   return (
     <>
       <PageHeader
         title={isDailyChallenge ? 'Daily Puzzle' : `Level ${level}`}
-        actions={renderHeaderActions()}
         coins={coins}
+        lives={lives}
         isClient={isClient}
       />
       <main className="flex flex-1 flex-col items-center justify-between p-4 md:p-6">
