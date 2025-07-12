@@ -70,22 +70,31 @@ export default function LevelSelectionPage() {
               >
                 <Card
                   className={cn(
-                    'flex h-20 w-full flex-col items-center justify-center transition-all duration-200',
+                    'relative flex h-20 w-full flex-col items-center justify-center overflow-hidden transition-all duration-200 group',
                     isLocked
                       ? 'bg-muted text-muted-foreground'
-                      : 'hover:scale-105 hover:shadow-lg',
+                      : 'hover:scale-105 hover:shadow-lg hover:border-primary/50',
                     isCompleted
-                      ? 'border-green-500/50 bg-green-500/10'
+                      ? 'border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400'
                       : 'border-border'
                   )}
                 >
+                  {isCompleted && (
+                    <div className="absolute top-1 right-1 rounded-full bg-green-500 p-1 text-white">
+                        <Check className="h-3 w-3" />
+                    </div>
+                  )}
                   <CardContent className="flex flex-col items-center justify-center p-2 text-center">
                     {isLocked ? (
-                      <Lock className="h-5 w-5" />
-                    ) : isCompleted ? (
-                      <Check className="h-5 w-5 text-green-500" />
-                    ) : null}
-                    <span className="mt-1 text-lg font-bold">{level}</span>
+                      <Lock className="h-6 w-6" />
+                    ) : (
+                       <span className={cn(
+                           "text-2xl font-bold",
+                           isCompleted ? "opacity-70" : "text-foreground"
+                       )}>
+                           {level}
+                       </span>
+                    )}
                   </CardContent>
                 </Card>
               </Link>
