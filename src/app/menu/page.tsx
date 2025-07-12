@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon } from 'lucide-react';
+import { ChevronRight, User, Trophy, ShoppingCart, Calendar, ListChecks, Star, Package, Coins as CoinsIcon, Flame } from 'lucide-react';
 
 type MenuItem = {
   name: string;
@@ -24,10 +24,16 @@ const menuItems: MenuItem[] = [
     icon: <ListChecks className="h-8 w-8 text-purple-500" />,
   },
   {
+    name: 'Streak Tracker',
+    description: 'Track your daily puzzle streak.',
+    href: '/streaks',
+    icon: <Flame className="h-8 w-8 text-orange-500" />,
+  },
+  {
     name: 'Puzzle Packs',
     description: 'Explore themed puzzle collections.',
     href: '/packs',
-    icon: <Package className="h-8 w-8 text-orange-500" />,
+    icon: <Package className="h-8 w-8 text-indigo-500" />,
   },
   {
     name: 'Achievements',
@@ -51,7 +57,7 @@ const menuItems: MenuItem[] = [
     name: 'Leaderboard',
     description: 'See how you rank against others.',
     href: '/leaderboard',
-    icon: <Trophy className="h-8 w-8 text-yellow-500" />,
+    icon: <Trophy className="h-8 w-8 text-amber-500" />,
   },
   {
     name: 'Profile',
