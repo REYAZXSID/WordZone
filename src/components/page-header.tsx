@@ -21,6 +21,9 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
   const pathname = usePathname();
   const backLink = pathname.includes('/game/[difficulty]') ? '/game/category' : pathname.startsWith('/game') ? '/game/category' : '/';
 
+  const isLevelTitle = title.startsWith('Level ');
+  const [titleText, titleNumber] = isLevelTitle ? title.split(' ') : [title, null];
+
   return (
     <header className="sticky top-0 z-10 flex h-16 w-full items-center border-b bg-background/80 px-4 backdrop-blur-sm">
       <div className="flex w-1/3 justify-start">
@@ -32,7 +35,7 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
         </Button>
       </div>
 
-      <div className="flex w-1/3 items-center justify-center gap-2">
+      <div className="flex w-1/3 items-center justify-center gap-4">
         {lives !== undefined && (
           <div className="flex items-center gap-1">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -46,9 +49,16 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
             ))}
           </div>
         )}
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-          {title}
-        </h1>
+        {isLevelTitle ? (
+           <div className="flex flex-col items-center justify-center text-center leading-none">
+              <span className="text-sm font-medium text-muted-foreground">{titleText}</span>
+              <span className="text-3xl font-bold">{titleNumber}</span>
+           </div>
+        ) : (
+             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                {title}
+            </h1>
+        )}
       </div>
 
       <div className="flex w-1/3 items-center justify-end gap-2">
