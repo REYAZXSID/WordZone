@@ -1,11 +1,11 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check, Lock, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,7 @@ export default function LevelSelectionPage() {
         <main className="flex-1 p-4 sm:p-6">
           <div className="mx-auto grid max-w-4xl grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8">
             {levels.map((level) => (
-              <Card key={level} className="h-24 w-24 rounded-full animate-pulse bg-muted" />
+              <Card key={level} className="h-24 w-24 animate-pulse rounded-lg bg-muted" />
             ))}
           </div>
         </main>
@@ -70,7 +70,7 @@ export default function LevelSelectionPage() {
               >
                 <Card
                   className={cn(
-                    'relative flex h-24 w-24 flex-col items-center justify-center overflow-hidden transition-all duration-200 group rounded-full',
+                    'relative flex h-24 w-full flex-col items-center justify-center overflow-hidden rounded-lg transition-all duration-200 group',
                     isLocked
                       ? 'bg-muted text-muted-foreground'
                       : 'hover:scale-105 hover:shadow-lg hover:border-primary/50',
@@ -80,7 +80,7 @@ export default function LevelSelectionPage() {
                   )}
                 >
                   {isCompleted && (
-                    <div className="absolute top-3 right-3 rounded-full bg-green-500 p-1 text-white">
+                    <div className="absolute top-2 right-2 rounded-full bg-green-500 p-1 text-white">
                         <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -96,8 +96,8 @@ export default function LevelSelectionPage() {
                        </span>
                     )}
                   </CardContent>
-                  {isCompleted && (
-                       <div className="absolute bottom-4 flex gap-0.5">
+                  {isCompleted && !isLocked && (
+                       <div className="absolute bottom-3 flex gap-0.5">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
