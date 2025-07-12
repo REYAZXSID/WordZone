@@ -1,9 +1,11 @@
+
 export type Puzzle = {
   id: number;
   text: string;
   quote: string;
   author: string;
   cipher: Record<string, string>; // Decrypted -> Encrypted
+  difficulty: Difficulty;
 };
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -35,7 +37,7 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
     .join("");
 };
 
-const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id'>[] = [
+const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
     // Easy (<= 15 letters)
     { quote: "GO TO HELL", author: "UNKNOWN" },
     { quote: "BE YOURSELF", author: "OSCAR WILDE" },
@@ -68,19 +70,27 @@ const puzzleKeys = [
     "ZAQWSXCDERFVBGTYHNMJUIKLOP", "PMLKONIJBGUHVYFCXDRZESWAQT"
 ]
 
+const getDifficulty = (quote: string): Difficulty => {
+    const length = quote.replace(/[^A-Z]/g, '').length;
+    if (length <= 15) return 'easy';
+    if (length <= 20) return 'medium';
+    return 'hard';
+}
+
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
     const cipher = createCipher(puzzleKeys[index % puzzleKeys.length]);
     return {
         ...p,
         id: index + 1,
         cipher,
-        text: encrypt(p.quote, cipher)
+        text: encrypt(p.quote, cipher),
+        difficulty: getDifficulty(p.quote)
     }
 });
 
-const easyPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length <= 15);
-const mediumPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length > 15 && p.quote.replace(/[^A-Z]/g, '').length <= 20);
-const hardPuzzles = puzzles.filter(p => p.quote.replace(/[^A-Z]/g, '').length > 20);
+const easyPuzzles = puzzles.filter(p => p.difficulty === 'easy');
+const mediumPuzzles = puzzles.filter(p => p.difficulty === 'medium');
+const hardPuzzles = puzzles.filter(p => p.difficulty === 'hard');
 
 const getPuzzlePool = (difficulty: Difficulty): Puzzle[] => {
     switch (difficulty) {
@@ -101,7 +111,9 @@ export const getDailyPuzzle = (): Puzzle => {
   const diff = now.getTime() - startOfYear.getTime();
   const oneDay = 1000 * 60 * 60 * 24;
   const dayOfYear = Math.floor(diff / oneDay);
-  return puzzles[dayOfYear % puzzles.length];
+  const puzzle = puzzles[dayOfYear % puzzles.length];
+  // Force daily puzzle to be medium difficulty for reward consistency
+  return { ...puzzle, difficulty: 'medium' };
 };
 
 export const getTotalPuzzles = (difficulty: Difficulty): number => {

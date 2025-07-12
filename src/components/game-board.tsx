@@ -6,12 +6,11 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, RotateCcw, CheckCircle, RefreshCw, PartyPopper, ArrowRight, Home } from 'lucide-react';
+import { Lightbulb, RotateCcw, PartyPopper, ArrowRight, Home, RefreshCw, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -23,8 +22,9 @@ import { ThemeToggle } from './theme-toggle';
 
 type GameBoardProps = {
   puzzle: Puzzle;
-  level: number;
-  onGameComplete?: () => void;
+  level?: number;
+  isDailyChallenge?: boolean;
+  onGameComplete?: () => number; // Returns coins earned
   onNextLevel?: () => void;
   onPlayAgain?: () => void;
   onMainMenu?: () => void;
@@ -32,7 +32,7 @@ type GameBoardProps = {
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAgain, onMainMenu }: GameBoardProps) {
+export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameComplete, onNextLevel, onPlayAgain, onMainMenu }: GameBoardProps) {
   const [userGuesses, setUserGuesses] = useState<Record<string, string>>({});
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -41,6 +41,8 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
   const [isComplete, setIsComplete] = useState(false);
   const [showWinDialog, setShowWinDialog] = useState(false);
   const [animateCorrect, setAnimateCorrect] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [coinsEarned, setCoinsEarned] = useState(0);
 
   useEffect(() => setIsClient(true), []);
 
@@ -48,13 +50,16 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
   const letterToNumberMap = useMemo(() => getCipherLetterToNumberMap(puzzle.text), [puzzle.text]);
   const puzzleEncryptedLetters = useMemo(() => Object.keys(letterToNumberMap).filter(l => puzzle.text.includes(l)), [letterToNumberMap, puzzle.text]);
 
-  const resetGame = useCallback(() => {
+  const resetGame = useCallback((isInitialLoad = false) => {
     setUserGuesses({});
     setSelectedLetter(null);
     setIsComplete(false);
+    if (isInitialLoad) {
+      setStartTime(Date.now());
+    }
     
     const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
-    const numberOfHints = Math.min(1, shuffledLetters.length);
+    const numberOfHints = Math.min(isDailyChallenge ? 0 : 1, shuffledLetters.length);
     const newGuesses: Record<string, string> = {};
     
     for(let i = 0; i < numberOfHints; i++) {
@@ -65,23 +70,52 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
       }
     }
     setUserGuesses(newGuesses);
-  }, [puzzleEncryptedLetters, solvedCipher]);
+  }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge]);
 
   useEffect(() => {
-    resetGame();
+    resetGame(true);
     setShowWinDialog(false);
   }, [puzzle.id, resetGame]);
 
-  const checkSolution = useCallback(() => {
+  const handleGameCompletion = useCallback(() => {
     if (isComplete) return;
-    const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
-    
-    if (solved) {
-      setIsComplete(true);
-      setShowWinDialog(true);
-      onGameComplete?.();
+
+    let totalReward = 0;
+    if (onGameComplete) {
+      totalReward = onGameComplete();
     }
-  }, [userGuesses, onGameComplete, solvedCipher, puzzleEncryptedLetters, isComplete]);
+    
+    // Time bonus logic for regular levels
+    if (!isDailyChallenge && startTime) {
+      const endTime = Date.now();
+      const durationInSeconds = (endTime - startTime) / 1000;
+      if (durationInSeconds <= 60 && totalReward > 0) { // Only give bonus if they got a reward
+        const timeBonus = 5;
+        totalReward += timeBonus;
+        
+        const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+        const newCoinBalance = coins + timeBonus;
+        localStorage.setItem('crypto_coins', newCoinBalance.toString());
+
+        toast({
+          title: 'Speed Bonus!',
+          description: `Solved in under a minute! +${timeBonus} coins.`,
+        });
+      }
+    }
+
+    setCoinsEarned(totalReward);
+    setIsComplete(true);
+    setShowWinDialog(true);
+    
+  }, [isComplete, onGameComplete, startTime, isDailyChallenge, toast]);
+
+  const checkSolution = useCallback(() => {
+    const solved = puzzleEncryptedLetters.every(char => userGuesses[char] === solvedCipher[char]);
+    if (solved) {
+      handleGameCompletion();
+    }
+  }, [userGuesses, solvedCipher, puzzleEncryptedLetters, handleGameCompletion]);
 
   useEffect(() => {
     if (Object.keys(userGuesses).length >= puzzleEncryptedLetters.length) {
@@ -171,7 +205,7 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
         <Lightbulb className="h-5 w-5" />
         <span className="sr-only">Hint</span>
       </Button>
-      <Button onClick={resetGame} variant="ghost" size="icon">
+      <Button onClick={() => resetGame(false)} variant="ghost" size="icon">
         <RotateCcw className="h-5 w-5" />
         <span className="sr-only">Reset</span>
       </Button>
@@ -183,8 +217,8 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
 
   return (
     <>
-      <PageHeader title={`Level ${level}`} actions={renderHeaderActions()} />
-      <main className="flex flex-1 flex-col items-center p-4 md:p-6 justify-between">
+      <PageHeader title={isDailyChallenge ? 'Daily Puzzle' : `Level ${level}`} actions={renderHeaderActions()} />
+      <main className="flex flex-1 flex-col items-center justify-start p-4 md:p-6">
         <div className="w-full max-w-4xl flex-grow flex flex-col items-center justify-start pt-4">
           <div className="flex flex-wrap justify-center gap-x-1 gap-y-4">
             {puzzle.text.split('').map((char, index) => {
@@ -247,10 +281,16 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
               </div>
               <div className="space-y-2">
                 <AlertDialogTitle className="text-3xl font-bold">
-                  Level Complete!
+                  {isDailyChallenge ? 'Challenge Complete!' : 'Level Complete!'}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   <div className="space-y-4 text-card-foreground dark:text-card-foreground">
+                    {coinsEarned > 0 && (
+                      <div className="flex items-center justify-center gap-2 text-lg font-semibold text-yellow-500">
+                        <Coins className="h-6 w-6" />
+                        <span>+{coinsEarned} Coins Earned!</span>
+                      </div>
+                    )}
                     <p>You've successfully decoded the quote:</p>
                     <blockquote className="border-l-4 border-primary bg-muted/50 p-4 rounded-r-lg italic">
                       "{puzzle.quote}"
@@ -271,13 +311,15 @@ export function GameBoard({ puzzle, level, onGameComplete, onNextLevel, onPlayAg
                   <Home className="mr-2 h-4 w-4" />
                   Main Menu
                 </Button>
-                <Button 
-                  onClick={() => { if(onNextLevel) onNextLevel(); }}
-                  disabled={level >= 50}
-                >
-                  Next Level
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                {!isDailyChallenge && (
+                  <Button 
+                    onClick={() => { if(onNextLevel) onNextLevel(); }}
+                    disabled={level && level >= 50}
+                  >
+                    Next Level
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

@@ -6,7 +6,8 @@ import { getDailyPuzzle } from '@/lib/puzzles';
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Flame, Calendar } from 'lucide-react';
+import { Flame, Calendar, Coins } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const puzzle = getDailyPuzzle();
 
@@ -14,6 +15,7 @@ export default function DailyPage() {
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClient, setIsClient] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -66,13 +68,25 @@ export default function DailyPage() {
     const today = new Date().toDateString();
 
     if (lastWinDate !== today) {
-      setStreak(prev => {
-          const newStreak = prev + 1;
-          localStorage.setItem('dailyPuzzleStreak', newStreak.toString());
-          localStorage.setItem('lastWinDate', today);
-          return newStreak;
+      const newStreak = (streak || 0) + 1;
+      setStreak(newStreak);
+      localStorage.setItem('dailyPuzzleStreak', newStreak.toString());
+      localStorage.setItem('lastWinDate', today);
+
+      // Award coins for daily puzzle
+      const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+      const reward = 40; // Daily puzzle reward
+      const newCoinBalance = coins + reward;
+      localStorage.setItem('crypto_coins', newCoinBalance.toString());
+      
+      toast({
+        title: 'Daily Puzzle Complete!',
+        description: `You earned ${reward} coins!`,
       });
+
+      return reward;
     }
+    return 0; // No reward if already completed today
   };
 
   const renderStats = () => {
@@ -134,7 +148,7 @@ export default function DailyPage() {
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 p-4 md:flex-row md:justify-center md:p-6">
           {renderStats()}
         </div>
-        <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} />
+        <GameBoard puzzle={puzzle} onGameComplete={handleGameComplete} isDailyChallenge={true} />
       </div>
     </div>
   );
