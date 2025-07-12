@@ -62,7 +62,7 @@ export default function LevelSelectionPage() {
                 key={level}
                 href={isLocked ? '#' : `/game?difficulty=${difficulty}&level=${level}`}
                 className={cn(
-                  'pointer-events-auto',
+                  'pointer-events-auto relative',
                   isLocked && 'pointer-events-none'
                 )}
                 aria-disabled={isLocked}
@@ -70,7 +70,7 @@ export default function LevelSelectionPage() {
               >
                 <Card
                   className={cn(
-                    'relative flex h-20 w-20 flex-col items-center justify-center overflow-hidden rounded-full transition-all duration-200 group',
+                    'flex h-20 w-20 flex-col items-center justify-center rounded-full transition-all duration-200 group',
                     isLocked
                       ? 'bg-muted text-muted-foreground'
                       : 'hover:scale-105 hover:shadow-lg hover:border-primary/50',
@@ -79,11 +79,6 @@ export default function LevelSelectionPage() {
                       : 'border-border'
                   )}
                 >
-                  {isCompleted && (
-                    <div className="absolute top-1.5 right-1.5 rounded-full bg-green-500 p-1 text-white">
-                        <Check className="h-2 w-2" />
-                    </div>
-                  )}
                   <CardContent className="flex flex-col items-center justify-center p-2 text-center">
                     {isLocked ? (
                       <Lock className="h-8 w-8" />
@@ -97,13 +92,18 @@ export default function LevelSelectionPage() {
                     )}
                   </CardContent>
                   {isCompleted && !isLocked && (
-                       <div className="absolute bottom-2 flex gap-0.5">
+                       <div className="absolute bottom-4 flex gap-0.5">
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
                         </div>
                     )}
                 </Card>
+                 {isCompleted && (
+                    <div className="absolute -top-1 -right-1 rounded-full bg-green-500 p-1 text-white ring-4 ring-background">
+                        <Check className="h-3 w-3" />
+                    </div>
+                )}
               </Link>
             );
           })}
