@@ -82,10 +82,26 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     }
     
     const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
-    const numberOfHints = Math.min(isDailyChallenge ? 0 : 1, shuffledLetters.length);
-    const newGuesses: Record<string, string> = {};
     
-    for(let i = 0; i < numberOfHints; i++) {
+    let numberOfHints = 0;
+    if (!isDailyChallenge) {
+        switch(puzzle.difficulty) {
+            case 'easy':
+                numberOfHints = 2;
+                break;
+            case 'medium':
+                numberOfHints = 1;
+                break;
+            case 'hard':
+                numberOfHints = 0;
+                break;
+        }
+    }
+    
+    const newGuesses: Record<string, string> = {};
+    const hintsToApply = Math.min(numberOfHints, shuffledLetters.length);
+    
+    for(let i = 0; i < hintsToApply; i++) {
       const encryptedLetter = shuffledLetters[i];
       const decryptedLetter = solvedCipher[encryptedLetter];
       if (decryptedLetter) {
@@ -94,7 +110,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     }
     setUserGuesses(newGuesses);
     playSound('swoosh');
-  }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge, playSound]);
+  }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge, playSound, puzzle.difficulty]);
 
   useEffect(() => {
     resetGame(true);
