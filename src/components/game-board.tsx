@@ -178,19 +178,19 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
   return (
     <>
       <PageHeader title="Decode the Quote" actions={renderHeaderActions()} />
-      <main className="flex-1 flex flex-col items-center p-4 gap-4 md:p-6">
-        <div className="flex-1 w-full max-w-4xl flex flex-col items-center">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-4 md:p-6">
+        <div className="flex-1 w-full max-w-4xl flex flex-col items-center justify-center">
           <div className="w-full text-center mb-4">
              <p className="text-sm text-muted-foreground">By {puzzle.author}</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-3 gap-y-2">
+          <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
             {puzzle.text.split(' ').map((word, wordIndex) => (
-              <div key={`word-${wordIndex}`} className="flex flex-nowrap gap-1">
+              <div key={`word-${wordIndex}`} className="flex flex-nowrap items-center gap-1">
                 {word.split('').map((char, charIndex) => {
                   if (ALPHABET.includes(char)) {
                     return (
                       <div
-                        key={`${char}-${wordIndex}-${charIndex}`}
+                        key={`${wordIndex}-${charIndex}`}
                         onClick={() => handleLetterSelect(char)}
                         className={cn(
                           "flex h-16 w-12 cursor-pointer flex-col items-center justify-between rounded-md bg-card font-mono text-xl transition-all border-2",
@@ -207,7 +207,7 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
                   }
                   // Render non-alphabetic characters like punctuation directly
                   return (
-                     <div key={`char-${wordIndex}-${charIndex}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
+                     <div key={`punct-${wordIndex}-${charIndex}`} className="flex h-16 w-8 items-end justify-center pb-2 text-2xl font-bold">
                         {char}
                      </div>
                   );
@@ -217,8 +217,8 @@ export function GameBoard({ puzzle, onGameComplete, onNewGame }: GameBoardProps)
           </div>
         </div>
 
-        <div className="w-full max-w-xl p-2 rounded-lg bg-card/50">
-           <div className="grid grid-cols-7 gap-1 md:grid-cols-13 md:gap-2 justify-center">
+        <div className="w-full max-w-xl p-2 rounded-lg bg-card/50 mt-4">
+           <div className="grid grid-cols-7 gap-1 md:grid-cols-13 md:gap-2 justify-items-center">
             {ALPHABET.map((letter) => (
               <Button
                 key={letter}
