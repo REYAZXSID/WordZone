@@ -5,6 +5,9 @@ import React from 'react';
 import { PowerUpGroup } from './power-up-group';
 import type { PowerUpDefinition } from './power-up-group';
 import { Lightbulb, Target, Trash2, FileText, Undo2, Sparkles, Package } from 'lucide-react';
+import { Button } from './ui/button';
+import { ShoppingCart } from 'lucide-react';
+import Link from 'next/link';
 
 const POWERUPS: PowerUpDefinition[] = [
   { id: 'reveal_letter', name: 'Reveal Letter', icon: <Lightbulb />, colorClass: 'border-yellow-500/50 text-yellow-500' },
@@ -28,19 +31,25 @@ export function PowerUpBar({ inventory, onUsePowerUp, disabled = false }: PowerU
     (def) => inventory[def.id] && inventory[def.id] > 0
   );
 
-  if (ownedPowerUps.length === 0) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col items-center justify-center gap-2 my-4">
-        {ownedPowerUps.length > 0 && (
+        {ownedPowerUps.length > 0 ? (
             <PowerUpGroup 
                 powerUps={ownedPowerUps}
                 inventory={inventory}
                 onUsePowerUp={onUsePowerUp}
                 disabled={disabled}
             />
+        ) : (
+             <div className="text-center p-4 rounded-lg bg-muted/50 w-full max-w-sm">
+                <p className="text-sm text-muted-foreground mb-3">You have no power-ups.</p>
+                <Button asChild>
+                    <Link href="/shop">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Go to Shop
+                    </Link>
+                </Button>
+            </div>
         )}
     </div>
   );

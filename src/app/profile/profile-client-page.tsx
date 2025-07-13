@@ -33,7 +33,6 @@ import { initialAchievements, Achievement } from '../achievements/achievements-c
 import { Flame, Star, Coins, CheckCircle2, ShieldCheck, Pen, Trash2, Gauge, Lightbulb, Badge as BadgeIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
 
 const TIER_ICONS = {
   bronze: '🥉',
@@ -56,6 +55,18 @@ export function ProfileClientPage() {
     useEffect(() => {
         setIsClient(true);
         refreshUserData();
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'crypto_user_data' || e.key === 'crypto_coins') {
+                refreshUserData();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, [refreshUserData]);
 
     const handleProfileSave = () => {
@@ -73,16 +84,16 @@ export function ProfileClientPage() {
         window.location.reload(); 
     };
 
-    const recentBadge = useMemo(() => {
-        if (!userData) return null;
-        const unlocked = userData.unlockedAchievements;
-        if (unlocked.length === 0) return null;
-        
-        const lastUnlockedId = unlocked[unlocked.length - 1];
-        const achievement = initialAchievements.find(a => a.id === lastUnlockedId);
-        
-        return achievement;
+    const unlockedAchievements = useMemo(() => {
+        if (!userData) return [];
+        return initialAchievements.filter(ach => userData.unlockedAchievements.includes(ach.id));
     }, [userData]);
+    
+    const recentBadge = useMemo(() => {
+        if (unlockedAchievements.length === 0) return null;
+        // This assumes achievements are unlocked in order. A more robust solution might use dates.
+        return unlockedAchievements[unlockedAchievements.length - 1];
+    }, [unlockedAchievements]);
 
     if (!isClient || !userData) {
         return null; // Let the Suspense fallback handle loading

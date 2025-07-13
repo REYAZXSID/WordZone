@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSound } from '@/hooks/use-sound';
-
+import { getUserData, saveUserData } from '@/lib/user-data';
 
 type StreakMilestone = {
     days: number;
@@ -25,7 +25,6 @@ const streakMilestones: StreakMilestone[] = [
     { days: 14, reward: 50, title: "14-Day Streak" },
 ];
 
-
 export function StreaksClientPage() {
     const [isClient, setIsClient] = useState(false);
     const [completedDates, setCompletedDates] = useState<Date[]>([]);
@@ -38,45 +37,15 @@ export function StreaksClientPage() {
     useEffect(() => {
         setIsClient(true);
         if (typeof window !== 'undefined') {
-            // Load completed dates
+            const userData = getUserData();
+            
             const storedDates = JSON.parse(localStorage.getItem('crypto_completed_dates') || '[]');
-            const dates = storedDates.map((d: string) => new Date(d));
+            const dates: Date[] = storedDates.map((d: string) => new Date(d));
             setCompletedDates(dates);
 
-            // Calculate streaks
-            if (dates.length > 0) {
-                let streak = 0;
-                let maxStreak = 0;
-                let lastDate = startOfDay(new Date(dates[0]));
-                let tempStreak = 1;
+            setCurrentStreak(userData.stats.dailyStreak);
+            setBestStreak(userData.stats.bestStreak);
 
-                for (let i = 1; i < dates.length; i++) {
-                    const currentDate = startOfDay(new Date(dates[i]));
-                    const expectedPreviousDate = addDays(currentDate, -1);
-                    if (isSameDay(lastDate, expectedPreviousDate)) {
-                        tempStreak++;
-                    } else {
-                        maxStreak = Math.max(maxStreak, tempStreak);
-                        tempStreak = 1;
-                    }
-                    lastDate = currentDate;
-                }
-                maxStreak = Math.max(maxStreak, tempStreak);
-                
-                // Check if current streak is active
-                const today = startOfDay(new Date());
-                const yesterday = addDays(today, -1);
-                if (isSameDay(lastDate, today) || isSameDay(lastDate, yesterday)) {
-                    streak = tempStreak;
-                } else {
-                    streak = 0;
-                }
-
-                setCurrentStreak(streak);
-                setBestStreak(maxStreak);
-            }
-
-            // Load claimed milestones
             const storedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_streaks') || '[]');
             setClaimedMilestones(storedClaimed);
         }
@@ -85,12 +54,11 @@ export function StreaksClientPage() {
     const handleClaimMilestone = (milestone: StreakMilestone) => {
         if (currentStreak < milestone.days || claimedMilestones.includes(milestone.days)) return;
 
-        // Add coins
         const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
         const newCoinBalance = currentCoins + milestone.reward;
+        saveUserData({ coins: newCoinBalance });
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
-        // Mark as claimed
         const newClaimed = [...claimedMilestones, milestone.days];
         setClaimedMilestones(newClaimed);
         localStorage.setItem('crypto_claimed_streaks', JSON.stringify(newClaimed));

@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Flame, Calendar, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { updateUserStat, getUserData } from '@/lib/user-data';
+import { addDays, isSameDay, startOfDay } from 'date-fns';
 
 const puzzle = getDailyPuzzle();
 
@@ -25,27 +27,9 @@ export default function DailyPage() {
   
   useEffect(() => {
     if (!isClient) return;
-
-    // Streak logic
-    const storedStreak = localStorage.getItem('dailyPuzzleStreak');
-    const lastWinDate = localStorage.getItem('lastWinDate');
-    const today = new Date().toDateString();
     
-    if (storedStreak) {
-      if (lastWinDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (lastWinDate !== yesterday.toDateString()) {
-          // Streak is broken
-          setStreak(0);
-          localStorage.setItem('dailyPuzzleStreak', '0');
-        } else {
-          setStreak(parseInt(storedStreak, 10));
-        }
-      } else {
-         setStreak(parseInt(storedStreak, 10));
-      }
-    }
+    const userData = getUserData();
+    setStreak(userData.stats.dailyStreak);
 
     // Timer logic
     const timerInterval = setInterval(() => {
@@ -66,29 +50,46 @@ export default function DailyPage() {
   }, [isClient]);
 
   const handleGameComplete = () => {
-    const lastWinDate = localStorage.getItem('lastWinDate');
-    const today = new Date().toDateString();
-
-    if (lastWinDate !== today) {
-      const newStreak = (streak || 0) + 1;
-      setStreak(newStreak);
-      localStorage.setItem('dailyPuzzleStreak', newStreak.toString());
-      localStorage.setItem('lastWinDate', today);
-
-      // Award coins for daily puzzle
-      const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-      const reward = 40; // Daily puzzle reward
-      const newCoinBalance = coins + reward;
-      localStorage.setItem('crypto_coins', newCoinBalance.toString());
-      
-      toast({
-        title: 'Daily Puzzle Complete!',
-        description: `You earned ${reward} coins!`,
-      });
-
-      return reward;
+    const lastWinDateStr = localStorage.getItem('lastWinDate');
+    const today = new Date();
+    
+    if (lastWinDateStr && isSameDay(new Date(lastWinDateStr), today)) {
+        return 0; // Already completed today
     }
-    return 0; // No reward if already completed today
+
+    const userData = getUserData();
+    let currentStreak = userData.stats.dailyStreak;
+    
+    const lastWinDate = lastWinDateStr ? new Date(lastWinDateStr) : null;
+    const yesterday = addDays(today, -1);
+
+    if (lastWinDate && isSameDay(lastWinDate, yesterday)) {
+        currentStreak++; // Continue streak
+    } else {
+        currentStreak = 1; // Start new or reset streak
+    }
+    
+    updateUserStat('dailyStreak', currentStreak);
+    setStreak(currentStreak);
+    
+    localStorage.setItem('lastWinDate', today.toDateString());
+
+    const savedDatesStr = localStorage.getItem('crypto_completed_dates') || '[]';
+    const savedDates = JSON.parse(savedDatesStr);
+    savedDates.push(today.toISOString());
+    localStorage.setItem('crypto_completed_dates', JSON.stringify(savedDates));
+
+    const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+    const reward = 40; // Daily puzzle reward
+    const newCoinBalance = coins + reward;
+    localStorage.setItem('crypto_coins', newCoinBalance.toString());
+    
+    toast({
+      title: 'Daily Puzzle Complete!',
+      description: `You earned ${reward} coins! Your streak is now ${currentStreak} days.`,
+    });
+
+    return reward;
   };
   
   const handleMainMenu = () => {

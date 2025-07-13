@@ -9,15 +9,17 @@ import { CheckCircle2, Medal, Puzzle, Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/use-sound';
-import { saveUserData, getUserData } from '@/lib/user-data';
+import { saveUserData, getUserData, UserData } from '@/lib/user-data';
 
 export type Achievement = {
   id: string;
   title: string;
   description: string;
   tier: 'bronze' | 'silver' | 'gold';
-  currentProgress: number;
-  targetProgress: number;
+  // A function to check if the achievement is unlocked based on user data
+  isUnlocked: (userData: UserData) => boolean; 
+  // A function to get the current progress
+  getProgress: (userData: UserData) => { current: number; target: number };
   reward: number; // Coins
   icon: React.ReactNode;
 };
@@ -35,87 +37,91 @@ export const initialAchievements: Achievement[] = [
     title: 'Rookie Solver',
     description: 'Solve your first puzzle.',
     tier: 'bronze',
-    currentProgress: 1,
-    targetProgress: 1,
     reward: 10,
     icon: <Puzzle className="h-6 w-6 text-blue-500" />,
+    isUnlocked: (data) => data.stats.puzzlesSolved >= 1,
+    getProgress: (data) => ({ current: Math.min(data.stats.puzzlesSolved, 1), target: 1 }),
   },
   {
     id: 'puzzle_apprentice',
     title: 'Puzzle Apprentice',
     description: 'Solve 10 easy puzzles.',
     tier: 'bronze',
-    currentProgress: 8,
-    targetProgress: 10,
     reward: 25,
     icon: <Puzzle className="h-6 w-6 text-blue-500" />,
+    isUnlocked: (data) => (data.stats.puzzlesSolvedByDifficulty?.easy ?? 0) >= 10,
+    getProgress: (data) => ({ current: Math.min(data.stats.puzzlesSolvedByDifficulty?.easy ?? 0, 10), target: 10 }),
   },
   {
     id: 'medium_master',
     title: 'Medium Master',
     description: 'Solve 25 medium puzzles.',
     tier: 'silver',
-    currentProgress: 12,
-    targetProgress: 25,
     reward: 100,
     icon: <Puzzle className="h-6 w-6 text-green-500" />,
+    isUnlocked: (data) => (data.stats.puzzlesSolvedByDifficulty?.medium ?? 0) >= 25,
+    getProgress: (data) => ({ current: Math.min(data.stats.puzzlesSolvedByDifficulty?.medium ?? 0, 25), target: 25 }),
   },
   {
     id: 'hard_veteran',
     title: 'Hard Veteran',
     description: 'Solve 50 hard puzzles.',
     tier: 'gold',
-    currentProgress: 3,
-    targetProgress: 50,
     reward: 250,
     icon: <Puzzle className="h-6 w-6 text-red-500" />,
+    isUnlocked: (data) => (data.stats.puzzlesSolvedByDifficulty?.hard ?? 0) >= 50,
+    getProgress: (data) => ({ current: Math.min(data.stats.puzzlesSolvedByDifficulty?.hard ?? 0, 50), target: 50 }),
   },
   {
     id: 'streaker',
     title: 'Streaker',
     description: 'Maintain a 7-day streak.',
     tier: 'silver',
-    currentProgress: 7,
-    targetProgress: 7,
     reward: 75,
     icon: <Star className="h-6 w-6 text-yellow-500" />,
+    isUnlocked: (data) => data.stats.dailyStreak >= 7,
+    getProgress: (data) => ({ current: Math.min(data.stats.dailyStreak, 7), target: 7 }),
   },
   {
     id: 'quick_thinker',
     title: 'Quick Thinker',
     description: 'Solve any puzzle in under a minute.',
     tier: 'bronze',
-    currentProgress: 0,
-    targetProgress: 1,
     reward: 30,
     icon: <Clock className="h-6 w-6 text-purple-500" />,
+    isUnlocked: (data) => data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime <= 60,
+    getProgress: (data) => ({ current: (data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime <= 60) ? 1 : 0, target: 1 }),
   },
 ];
 
 
 export function AchievementsClientPage() {
     const [isClient, setIsClient] = useState(false);
-    const [achievements, setAchievements] = useState<Achievement[]>([]);
     const { toast } = useToast();
     const playSound = useSound();
+    const [userData, setUserData] = useState<UserData>(getUserData());
 
     useEffect(() => {
         setIsClient(true);
-        // Load user data to get unlocked achievements
-        const userData = getUserData();
-        const savedUnlocked = userData.unlockedAchievements;
-        
-        // Demo: Check for newly completed achievements and reward coins automatically
-        const newlyUnlocked: string[] = [];
+        const handleStorageChange = () => {
+             setUserData(getUserData());
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+    
+    useEffect(() => {
+        if (!isClient) return;
+
+        const currentData = getUserData();
+        const savedUnlocked = new Set(currentData.unlockedAchievements);
+        let newlyUnlocked: string[] = [];
+        let totalReward = 0;
+
         initialAchievements.forEach(ach => {
-            if (ach.currentProgress >= ach.targetProgress && !savedUnlocked.includes(ach.id)) {
+            if (!savedUnlocked.has(ach.id) && ach.isUnlocked(currentData)) {
                 newlyUnlocked.push(ach.id);
-
-                // Add coins to balance (auto-claim)
-                const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-                const newCoinBalance = currentCoins + ach.reward;
-                localStorage.setItem('crypto_coins', newCoinBalance.toString());
-
+                totalReward += ach.reward;
                  toast({
                     title: 'Achievement Unlocked!',
                     description: `You earned ${ach.reward} coins for completing "${ach.title}"!`,
@@ -125,26 +131,35 @@ export function AchievementsClientPage() {
         });
 
         if (newlyUnlocked.length > 0) {
-            const allUnlocked = [...savedUnlocked, ...newlyUnlocked];
-            saveUserData({ unlockedAchievements: allUnlocked });
+            const allUnlocked = [...currentData.unlockedAchievements, ...newlyUnlocked];
+            const currentCoins = currentData.coins;
+            const newCoinBalance = currentCoins + totalReward;
+            
+            saveUserData({ 
+                unlockedAchievements: allUnlocked,
+                coins: newCoinBalance 
+            });
+            localStorage.setItem('crypto_coins', newCoinBalance.toString());
+            setUserData(getUserData()); // Refresh state
         }
-        
-        setAchievements(initialAchievements);
-    }, [toast, playSound]);
+    }, [isClient, toast, playSound]);
     
-    const unlockedAchievements = isClient ? getUserData().unlockedAchievements : [];
+    const achievementsWithProgress = initialAchievements.map(ach => {
+        const { current, target } = ach.getProgress(userData);
+        const isCompleted = userData.unlockedAchievements.includes(ach.id);
+        return { ...ach, currentProgress: current, targetProgress: target, isCompleted };
+    })
 
-    const renderAchievementCard = (achievement: Achievement) => {
-        const isCompleted = achievement.currentProgress >= achievement.targetProgress;
+    const renderAchievementCard = (achievement: typeof achievementsWithProgress[0]) => {
         const progress = Math.min((achievement.currentProgress / achievement.targetProgress) * 100, 100);
 
         return (
             <Card key={achievement.id} className={cn(
                 "transition-all duration-300",
-                !isCompleted ? "bg-muted/30" : "border-primary/50 bg-primary/10"
+                !achievement.isCompleted ? "bg-muted/30" : "border-primary/50 bg-primary/10"
             )}>
                 <CardContent className="flex items-center gap-4 p-4">
-                    <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg bg-background", !isCompleted && "grayscale opacity-50")}>
+                    <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg bg-background", !achievement.isCompleted && "grayscale opacity-50")}>
                         {achievement.icon}
                     </div>
                     <div className="flex-1 space-y-1.5">
@@ -164,7 +179,7 @@ export function AchievementsClientPage() {
                         </div>
                     </div>
                     <div className="flex flex-col items-center justify-center pl-4 w-20">
-                        {isCompleted ? (
+                        {achievement.isCompleted ? (
                              <div className="flex flex-col items-center text-green-500">
                                 <CheckCircle2 className="h-8 w-8" />
                                 <span className="text-xs font-bold mt-1">Unlocked</span>
@@ -183,20 +198,20 @@ export function AchievementsClientPage() {
     
     if (!isClient) return null;
 
-    const inProgress = achievements.filter(a => a.currentProgress < a.targetProgress);
-    const completed = achievements.filter(a => a.currentProgress >= a.targetProgress);
+    const inProgress = achievementsWithProgress.filter(a => !a.isCompleted);
+    const completed = achievementsWithProgress.filter(a => a.isCompleted);
 
     return (
         <div className="mx-auto max-w-2xl">
             <Tabs defaultValue="all">
                 <TabsList className="grid w-full grid-cols-3 mb-4">
-                    <TabsTrigger value="all">All ({achievements.length})</TabsTrigger>
+                    <TabsTrigger value="all">All ({achievementsWithProgress.length})</TabsTrigger>
                     <TabsTrigger value="in-progress">In Progress ({inProgress.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="all" className="space-y-3">
-                    {achievements.map(renderAchievementCard)}
+                    {achievementsWithProgress.map(renderAchievementCard)}
                 </TabsContent>
                 <TabsContent value="in-progress" className="space-y-3">
                     {inProgress.map(renderAchievementCard)}

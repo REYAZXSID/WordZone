@@ -1,4 +1,6 @@
 
+import type { Difficulty } from './puzzles';
+
 export type UserData = {
     userId: string;
     username: string;
@@ -6,8 +8,10 @@ export type UserData = {
     coins: number;
     stats: {
         puzzlesSolved: number;
+        puzzlesSolvedByDifficulty: Record<Difficulty, number>;
         fastestSolveTime: number | null;
         dailyStreak: number;
+        bestStreak: number;
         hintsUsed: number;
     };
     unlockedAchievements: string[];
@@ -19,6 +23,15 @@ const generateId = () => {
     return `user_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+const defaultStats = {
+    puzzlesSolved: 0,
+    puzzlesSolvedByDifficulty: { easy: 0, medium: 0, hard: 0, intermediate: 0, advance: 0 },
+    fastestSolveTime: null,
+    dailyStreak: 0,
+    bestStreak: 0,
+    hintsUsed: 0,
+};
+
 // Get user data from localStorage
 export const getUserData = (): UserData => {
     if (typeof window === 'undefined') {
@@ -28,14 +41,25 @@ export const getUserData = (): UserData => {
             username: 'Player',
             avatar: 'https://placehold.co/112x112.png',
             coins: 0,
-            stats: { puzzlesSolved: 0, fastestSolveTime: null, dailyStreak: 0, hintsUsed: 0 },
+            stats: defaultStats,
             unlockedAchievements: [],
         };
     }
 
     const data = localStorage.getItem('crypto_user_data');
     if (data) {
-        return JSON.parse(data);
+        const parsedData = JSON.parse(data);
+        // Ensure nested structure exists
+        if (!parsedData.stats) {
+            parsedData.stats = defaultStats;
+        }
+        if (!parsedData.stats.puzzlesSolvedByDifficulty) {
+            parsedData.stats.puzzlesSolvedByDifficulty = defaultStats.puzzlesSolvedByDifficulty;
+        }
+        if (parsedData.stats.bestStreak === undefined) {
+             parsedData.stats.bestStreak = parsedData.stats.dailyStreak;
+        }
+        return parsedData;
     }
 
     // Create default data for a new user
@@ -44,7 +68,7 @@ export const getUserData = (): UserData => {
         username: 'Player123',
         avatar: 'https://placehold.co/112x112.png',
         coins: 200,
-        stats: { puzzlesSolved: 0, fastestSolveTime: null, dailyStreak: 0, hintsUsed: 0 },
+        stats: defaultStats,
         unlockedAchievements: [],
     };
     localStorage.setItem('crypto_user_data', JSON.stringify(defaultData));
@@ -62,7 +86,7 @@ export const saveUserData = (dataToSave: Partial<UserData>) => {
 };
 
 // Update user stats
-export const updateUserStat = (stat: keyof UserData['stats'], value: number) => {
+export const updateUserStat = (stat: keyof UserData['stats'], value: number, difficulty?: Difficulty) => {
     if (typeof window === 'undefined') return;
 
     const currentData = getUserData();
@@ -72,8 +96,17 @@ export const updateUserStat = (stat: keyof UserData['stats'], value: number) => 
         if (newStats.fastestSolveTime === null || value < newStats.fastestSolveTime) {
             newStats.fastestSolveTime = value;
         }
-    } else {
-        (newStats[stat] as number) += value;
+    } else if (stat === 'puzzlesSolved' && difficulty) {
+        newStats.puzzlesSolved += value;
+        newStats.puzzlesSolvedByDifficulty[difficulty] = (newStats.puzzlesSolvedByDifficulty[difficulty] || 0) + value;
+    } else if (stat === 'dailyStreak') {
+        newStats.dailyStreak = value;
+        if (newStats.dailyStreak > newStats.bestStreak) {
+            newStats.bestStreak = newStats.dailyStreak;
+        }
+    }
+    else {
+        (newStats[stat as 'hintsUsed'] as number) += value;
     }
     
     saveUserData({ stats: newStats });

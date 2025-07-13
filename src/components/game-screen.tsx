@@ -40,7 +40,7 @@ export function GameScreen() {
         localStorage.setItem(key, JSON.stringify(completedLevels));
         
         // Update stats
-        updateUserStat('puzzlesSolved', 1);
+        updateUserStat('puzzlesSolved', 1, difficulty);
         updateUserStat('fastestSolveTime', Math.round(durationInSeconds));
         
         let reward = 0;
