@@ -21,9 +21,6 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
   const pathname = usePathname();
   const backLink = pathname.includes('/game/[difficulty]') ? '/game/category' : pathname.startsWith('/game') ? '/game/category' : '/';
 
-  const isLevelTitle = title.startsWith('Level ');
-  const [titleText, titleNumber] = isLevelTitle ? title.split(' ') : [title, null];
-
   return (
     <header className="sticky top-0 z-10 flex h-16 w-full items-center border-b bg-background/80 px-4 backdrop-blur-sm">
       <div className="flex w-1/3 justify-start items-center gap-4">
@@ -33,16 +30,9 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
             <span className="sr-only">Back</span>
           </Link>
         </Button>
-         {isLevelTitle ? (
-           <div className="flex flex-col items-start justify-center text-left leading-none">
-              <span className="text-sm font-medium text-muted-foreground">{titleText}</span>
-              <span className="text-2xl font-bold">{titleNumber}</span>
-           </div>
-        ) : (
-             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                {title}
-            </h1>
-        )}
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl truncate">
+            {title}
+        </h1>
       </div>
 
       <div className="flex w-1/3 items-center justify-center gap-4">
