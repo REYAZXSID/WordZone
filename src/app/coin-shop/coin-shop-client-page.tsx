@@ -206,7 +206,7 @@ export function CoinShopClientPage() {
                  handleRewardClaim(100, 'referral', false);
             }
         } catch (error) {
-            console.error('Error sharing:', error);
+            console.error('Error sharing with icon:', error);
             // Fallback for cases where fetch might fail or share is cancelled
             try {
               if (navigator.share) {
