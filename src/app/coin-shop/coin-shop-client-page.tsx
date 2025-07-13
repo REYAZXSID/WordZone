@@ -180,45 +180,43 @@ export function CoinShopClientPage() {
   }
 
   const handleInviteFriend = async () => {
-        const shareData = {
-            title: 'Cipher IQ',
-            text: 'Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard. Download it here:',
-            url: 'https://example.com/cipher-iq.apk'
-        };
+    const shareData = {
+        title: 'Cipher IQ',
+        text: 'Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard. Download it here:',
+        url: 'https://example.com/cipher-iq.apk'
+    };
+    
+    const awardCoins = () => {
+        toast({ title: "Thanks for sharing!", description: "You've received a reward." });
+        handleRewardClaim(100, 'referral', false);
+    };
 
-        try {
-            const iconUrl = 'https://files.catbox.moe/romunz.png';
-            const response = await fetch(iconUrl);
-            const blob = await response.blob();
-            const file = new File([blob], 'cipher-iq-icon.png', { type: 'image/png' });
+    try {
+        const iconUrl = 'https://files.catbox.moe/romunz.png';
+        const response = await fetch(iconUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'cipher-iq-icon.png', { type: 'image/png' });
 
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ ...shareData, files: [file] });
-                toast({ title: "Thanks for sharing!", description: "You've received a reward." });
-                handleRewardClaim(100, 'referral', false);
-            } else {
-                 // Fallback to sharing without the icon if files are not supported
-                 await navigator.share(shareData);
-                 toast({ title: "Thanks for sharing!", description: "You've received a reward." });
-                 handleRewardClaim(100, 'referral', false);
-            }
-        } catch (error) {
-            console.error('Error sharing with icon, falling back to text only:', error);
-            try {
-              if (navigator.share) { // Fallback to text only share
-                  await navigator.share(shareData);
-                  toast({ title: "Thanks for sharing!", description: "You've received a reward." });
-                  handleRewardClaim(100, 'referral', false);
-              } else { // Fallback to clipboard
-                  await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-                  toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
-                  handleRewardClaim(100, 'referral', false);
-              }
-            } catch (shareError) {
-              console.error('Fallback sharing failed:', shareError);
-              toast({ variant: 'destructive', title: "Sharing Failed", description: "Could not share at this moment." });
-            }
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ ...shareData, files: [file] });
+            awardCoins();
+        } else {
+            // Fallback for browsers that don't support file sharing
+            await navigator.share(shareData);
+            awardCoins();
         }
+    } catch (error) {
+        console.error('Sharing failed, trying fallback:', error);
+        // Fallback for browsers that don't support sharing at all, or if the first attempts fail
+        try {
+            await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+            toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
+            awardCoins();
+        } catch (copyError) {
+            console.error('Could not copy to clipboard:', copyError);
+            toast({ variant: 'destructive', title: "Sharing Failed", description: "Could not share or copy the link at this moment." });
+        }
+    }
   };
   
   const freeCoinOptions: FreeCoinOption[] = [
@@ -280,7 +278,7 @@ export function CoinShopClientPage() {
                     </CardContent>
                     <CardFooter>
                        {option.isInvite ? (
-                           <Button className="w-full" onClick={handleInviteFriend} disabled={isDisabled}>
+                           <Button className="w-full" onClick={handleInviteFriend}>
                              {buttonContent}
                            </Button>
                        ) : option.isAd ? (
