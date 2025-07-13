@@ -18,7 +18,8 @@ export const useUserData = () => {
         refreshUserData();
 
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'crypto_user_data' || e.key === 'crypto_coins') {
+            // We only care about the main user data object now
+            if (e.key === 'crypto_user_data') {
                 refreshUserData();
             }
         };

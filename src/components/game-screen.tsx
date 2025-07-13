@@ -9,7 +9,7 @@ import type { Puzzle, Difficulty } from '@/lib/puzzles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/use-sound';
-import { updateUserStat } from '@/lib/user-data';
+import { updateUserStat, saveUserData, getUserData } from '@/lib/user-data';
 
 export function GameScreen() {
   const searchParams = useSearchParams();
@@ -63,9 +63,8 @@ export function GameScreen() {
             });
         }
         
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-        const newCoinBalance = currentCoins + totalReward;
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
+        const currentData = getUserData();
+        saveUserData({ coins: currentData.coins + totalReward });
 
         if (reward > 0) {
              toast({

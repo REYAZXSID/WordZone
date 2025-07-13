@@ -76,10 +76,7 @@ export function ShopClientPage() {
     }
 
     const newCoinBalance = userData.coins - item.cost + (item.type === 'coinpack' ? item.amount || 0 : 0);
-    
-    // Update user data object and standalone coin item in localStorage
     saveUserData({ coins: newCoinBalance });
-    localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
     if (item.type === 'powerup') {
         const inventory = JSON.parse(localStorage.getItem('crypto_powerups') || '{}');
@@ -92,10 +89,6 @@ export function ShopClientPage() {
         playSound('coin');
         toast({ title: 'Coins Added!', description: `You received ${item.amount} coins.` });
     }
-    
-    // Manually trigger a storage event to ensure immediate update across all tabs/components
-    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data' }));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
   };
 
   if (!isClient || !userData) return null;

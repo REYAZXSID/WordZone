@@ -129,10 +129,6 @@ export function AchievementsClientPage() {
                 unlockedAchievements: allUnlocked,
                 coins: newCoinBalance 
             });
-            localStorage.setItem('crypto_coins', newCoinBalance.toString());
-            // Manually trigger storage event for other components
-            window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data' }));
-            window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
         }
     }, [isClient, toast, playSound, userData]);
     
