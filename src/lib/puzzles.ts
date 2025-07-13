@@ -47,26 +47,48 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
     { quote: "NEVER GIVE UP", author: "WINSTON CHURCHILL" },
     { quote: "I HAVE A DREAM", author: "MARTIN LUTHER KING" },
     { quote: "THINK DIFFERENT", author: "APPLE" },
-    
+    { quote: "SEIZE THE DAY", author: "HORACE"},
+    { quote: "TO BE OR NOT TO BE", author: "SHAKESPEARE"},
+    { quote: "LIVE AND LET LIVE", author: "PROVERB"},
+    { quote: "LESS IS MORE", author: "MIES VAN DER ROHE"},
+    { quote: "ACTIONS SPEAK LOUDER", author: "PROVERB"},
+    { quote: "DREAM BIG", author: "UNKNOWN"},
+    { quote: "CARPE DIEM", author: "HORACE"},
+    { quote: "FOLLOW YOUR HEART", author: "UNKNOWN"},
+    { quote: "KEEP IT SIMPLE", author: "KELLY JOHNSON"},
+
     // Medium (20-29 letters)
     { quote: "KNOWLEDGE IS POWER", author: "FRANCIS BACON" },
     { quote: "SIMPLICITY IS THE KEY", author: "BRUCE LEE"},
     { quote: "LEARNING NEVER ENDS", author: "UNKNOWN" },
     { quote: "STAY HUNGRY STAY FOOLISH", author: "STEVE JOBS" },
     { quote: "LOVE FOR ALL HATRED FOR NONE", author: "KHALIFATUL MASIH III" },
+    { quote: "HAVE NO FEAR OF PERFECTION", author: "SALVADOR DALI"},
+    { quote: "THE FUTURE IS NOW", author: "UNKNOWN"},
+    { quote: "STRIVE FOR GREATNESS", author: "LEBRON JAMES"},
+    { quote: "NEVER LOOK BACK", author: "PROVERB"},
+    { quote: "EVERY MOMENT IS A FRESH BEGINNING", author: "T.S. ELIOT"},
 
     // Hard (30-39 letters)
     { quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", author: "PANGRAM" },
     { quote: "THE ONLY THING WE HAVE TO FEAR IS FEAR ITSELF", author: "FRANKLIN D ROOSEVELT" },
+    { quote: "ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU", author: "JOHN F KENNEDY"},
+    { quote: "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY", author: "ALBERT EINSTEIN"},
+    { quote: "A JOURNEY OF A THOUSAND MILES BEGINS WITH A SINGLE STEP", author: "LAO TZU"},
+    { quote: "THE BEST WAY TO PREDICT THE FUTURE IS TO INVENT IT", author: "ALAN KAY"},
     
     // Intermediate (40-49 letters)
     { quote: "THAT'S ONE SMALL STEP FOR A MAN ONE GIANT LEAP FOR MANKIND", author: "NEIL ARMSTRONG" },
-    
+    { quote: "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO", author: "STEVE JOBS"},
+    { quote: "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS", author: "WINSTON CHURCHILL"},
+    { quote: "THE PURPOSE OF OUR LIVES IS TO BE HAPPY", author: "DALAI LAMA"},
+
     // Advance (50+)
     { quote: "TWO ROADS DIVERGED IN A WOOD AND I TOOK THE ONE LESS TRAVELED BY", author: "ROBERT FROST" },
     { quote: "THE GREATEST GLORY IN LIVING LIES NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL", author: "NELSON MANDELA"},
     { quote: "WHETHER YOU THINK YOU CAN OR YOU THINK YOU CAN'T YOU'RE RIGHT", author: "HENRY FORD" },
-
+    { quote: "YOU MISS ONE HUNDRED PERCENT OF THE SHOTS YOU DON'T TAKE", author: "WAYNE GRETZKY"},
+    { quote: "TO BE YOURSELF IN A WORLD THAT IS CONSTANTLY TRYING TO MAKE YOU SOMETHING ELSE IS THE GREATEST ACCOMPLISHMENT", author: "RALPH WALDO EMERSON"},
 ];
 
 
@@ -78,20 +100,19 @@ const puzzleKeys = [
     "AZSXDCFVGBHNJMKLIUYTREWQPO", "YTREWQPOIUASDFGHJKLMNBVCXZ",
     "QWERTZUIOPASDFGHJKLYXCVBNM", "YXCVBNMASDFGHJKLQWERTZUIOP",
     "ZAQWSXCDERFVBGTYHNMJUIKLOP", "PMLKONIJBGUHVYFCXDRZESWAQT",
-    "BCDEFGHIJKLMNOPQRSTUVWXYZA", "DEFGHIJKLMNOPQRSTUVWXYZABC"
+    "BCDEFGHIJKLMNOPQRSTUVWXYZA", "DEFGHIJKLMNOPQRSTUVWXYZABC",
+    "VFRSWCXDEQAZBGTYHNMJUIKLOP", "HGFDSAPOIUYTREWQMNBVCXZLKJ",
+    "OKMIJNUHBYGVTFCRDXESZWAQPL", "BVCXZLKJHGFDSAPOIUYTREWQMN",
+    "CRFVTGBYHNUJMIKOLPWSXEDQAZ", "TREWQPOIUYASDFGHJKLMNBVCXZ"
 ]
 
 const getDifficulty = (quote: string): Difficulty => {
     const length = quote.replace(/[^A-Z]/g, '').length;
     if (length < 20) return 'easy';
-    if (length >= 20 && length <= 25) return 'medium';
-    if (length >= 30 && length <= 35) return 'hard';
-    if (length > 35 && length <= 40) return 'intermediate';
-    if (length > 40 && length <= 45) return 'advance';
-    // Fallback for quotes outside the defined ranges
-    if (length > 45) return 'advance';
-    if (length > 25 && length < 30) return 'medium'; // if between 25 and 30
-    return 'easy'; // Default fallback
+    if (length >= 20 && length <= 29) return 'medium';
+    if (length >= 30 && length <= 39) return 'hard';
+    if (length >= 40 && length <= 49) return 'intermediate';
+    return 'advance';
 }
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
@@ -140,14 +161,46 @@ export const getDailyPuzzle = (): Puzzle => {
 };
 
 export const getTotalPuzzles = (difficulty: Difficulty): number => {
-    return getPuzzlePool(difficulty).length;
+    // Each category has 50 levels now.
+    return 50;
 }
 
 export const getPuzzleForLevel = (difficulty: Difficulty, level: number): Puzzle => {
+    const difficultyOrder: Difficulty[] = ['easy', 'medium', 'hard', 'intermediate', 'advance'];
+    const difficultyIndex = difficultyOrder.indexOf(difficulty);
+
     const puzzlePool = getPuzzlePool(difficulty);
-    // level is 1-based, array is 0-based
-    const index = (level - 1) % puzzlePool.length;
-    return puzzlePool[index];
+    if (puzzlePool.length === 0) {
+        // Fallback to all puzzles if a category is empty
+        const fallbackIndex = (level - 1) % puzzles.length;
+        return puzzles[fallbackIndex];
+    }
+    
+    // Create a deterministic but unique index for each level/difficulty combination
+    const uniqueIndex = (level - 1 + (difficultyIndex * 50)) % puzzles.length;
+
+    // To ensure variety within a category, we'll use the unique index to pick from the main puzzle list,
+    // then find a puzzle that matches the desired difficulty. This is a simple way to get variety
+    // without complex mapping, but it may not always provide a puzzle of the exact difficulty
+    // if the main pool is not perfectly balanced. For this implementation, we will cycle within the
+    // specific difficulty pool to ensure difficulty is respected.
+    
+    const categoryIndex = (level - 1) % puzzlePool.length;
+    
+    // We create a new puzzle object to ensure the ID is unique for the level
+    const basePuzzle = puzzlePool[categoryIndex];
+    const newId = (difficultyIndex * 1000) + level;
+    
+    // Re-encrypt with a different key to ensure the puzzle itself is unique
+    const keyIndex = (newId) % puzzleKeys.length;
+    const newCipher = createCipher(puzzleKeys[keyIndex]);
+    
+    return {
+        ...basePuzzle,
+        id: newId,
+        cipher: newCipher,
+        text: encrypt(basePuzzle.quote, newCipher),
+    };
 }
 
 export const invertCipher = (cipher: Record<string, string>): Record<string, string> => {

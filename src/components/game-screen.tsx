@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GameBoard } from '@/components/game-board';
-import { getPuzzleForLevel } from '@/lib/puzzles';
+import { getPuzzleForLevel, getTotalPuzzles } from '@/lib/puzzles';
 import type { Puzzle, Difficulty } from '@/lib/puzzles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -80,7 +80,8 @@ export function GameScreen() {
   };
 
   const handleNextLevel = () => {
-    if (level < 50) { // 50 total levels
+    const totalLevels = getTotalPuzzles(difficulty);
+    if (level < totalLevels) {
       router.push(`/game?difficulty=${difficulty}&level=${level + 1}`);
     } else {
         toast({ title: "Congratulations!", description: `You have completed all levels for ${difficulty} difficulty.`});
