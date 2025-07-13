@@ -6,27 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  AlertDialogCancel
-} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus, ThumbsUp, MessageSquare, Youtube, ArrowRight, Copy, QrCode } from 'lucide-react';
+import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus, ThumbsUp, MessageSquare, Youtube, ArrowRight, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useSound } from '@/hooks/use-sound';
 import { useUserData } from '@/hooks/use-user-data';
 import { saveUserData } from '@/lib/user-data';
 import { Separator } from '@/components/ui/separator';
-import { generateQrCode } from '@/ai/flows/generate-qr-code';
-import { Skeleton } from '@/components/ui/skeleton';
-
 
 type SocialReward = {
   id: 'like' | 'comment' | 'subscribe';
@@ -64,16 +51,26 @@ export function CoinShopClientPage() {
   const [claimedOneTime, setClaimedOneTime] = useState<string[]>([]);
   const [dailyRewardTimeLeft, setDailyRewardTimeLeft] = useState('');
   const [adRewardTimeLeft, setAdRewardTimeLeft] = useState('');
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
-  const [isQrLoading, setIsQrLoading] = useState(false);
+  const [inviteFile, setInviteFile] = useState<File | null>(null);
+
   const { toast } = useToast();
   const playSound = useSound();
 
   const INVITE_URL = 'https://example.com/cipher-iq.apk';
+  const ICON_URL = 'https://files.catbox.moe/romunz.png';
   const SHARE_MESSAGE = "Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard.";
 
   useEffect(() => {
     if (isClient) {
+        // Pre-fetch the icon for sharing
+        fetch(ICON_URL)
+            .then(res => res.blob())
+            .then(blob => {
+                const file = new File([blob], 'icon.png', { type: 'image/png' });
+                setInviteFile(file);
+            })
+            .catch(err => console.error("Could not fetch invite icon:", err));
+
         const savedClaimedSocial = JSON.parse(localStorage.getItem('crypto_claimed_social') || '[]');
         setClaimedSocial(savedClaimedSocial);
         const savedVisited = JSON.parse(localStorage.getItem('crypto_visited_tasks') || '[]');
@@ -193,35 +190,46 @@ export function CoinShopClientPage() {
           localStorage.setItem('crypto_ad_reward_claimed_at', Date.now().toString());
           setAdRewardTimeLeft('59:59');
       }
-
-      handleRewardClaim(option.reward, option.id, !!option.isOneTime);
+      
+      if (option.isInvite) {
+        handleInvite();
+      } else {
+        handleRewardClaim(option.reward, option.id, !!option.isOneTime);
+      }
   }
 
-  const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText(`${SHARE_MESSAGE} Download at: ${INVITE_URL}`)
-        .then(() => {
-            toast({ title: "Link Copied!", description: "The invite link and message have been copied." });
-            handleRewardClaim(100, 'referral', false); // Reward on copy
-        })
-        .catch(err => {
-            console.error('Could not copy text: ', err);
-            toast({ variant: 'destructive', title: "Copy Failed", description: "Could not copy the link." });
-        });
-  };
-
-  const onInviteOpen = async () => {
-    if (qrCodeDataUrl) return; // Don't regenerate if we already have it
-    setIsQrLoading(true);
+  const handleInvite = async () => {
+    const shareData = {
+        title: 'Cipher IQ',
+        text: `${SHARE_MESSAGE} Download at: ${INVITE_URL}`,
+        url: INVITE_URL,
+    };
+    
     try {
-        const qrCode = await generateQrCode(INVITE_URL);
-        setQrCodeDataUrl(qrCode);
-    } catch (error) {
-        console.error("Failed to generate QR code", error);
-        toast({ variant: 'destructive', title: "QR Code Error", description: "Could not generate the QR code." });
-    } finally {
-        setIsQrLoading(false);
+        if (navigator.share) {
+            // Try sharing with the file if available and supported
+            if (inviteFile && navigator.canShare && navigator.canShare({ files: [inviteFile] })) {
+                await navigator.share({ ...shareData, files: [inviteFile] });
+            } else {
+                // Fallback to sharing text and URL
+                await navigator.share(shareData);
+            }
+            toast({ title: "Thanks for sharing!", description: "Your friends will thank you." });
+            handleRewardClaim(100, 'referral', false); // Reward on successful share
+        } else {
+            // Fallback for browsers that don't support Web Share API
+            navigator.clipboard.writeText(shareData.text);
+            toast({ title: "Link Copied!", description: "Invite link copied to clipboard." });
+            handleRewardClaim(100, 'referral', false); // Reward on copy
+        }
+    } catch (err) {
+        console.error('Could not share:', err);
+        // Don't show an error if the user cancelled the share dialog
+        if ((err as Error).name !== 'AbortError') {
+             toast({ variant: 'destructive', title: "Share Failed", description: "Could not share the invite." });
+        }
     }
-  }
+  };
   
   const freeCoinOptions: FreeCoinOption[] = [
       { id: 'starter_pack', name: 'Starter Pack', description: 'A one-time gift to get you going!', reward: 250, icon: <Sparkles className="h-8 w-8 text-purple-500" />, isOneTime: true },
@@ -281,58 +289,13 @@ export function CoinShopClientPage() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                       {option.isInvite ? (
-                           <AlertDialog onOpenChange={(open) => open && onInviteOpen()}>
-                               <AlertDialogTrigger asChild>
-                                   <Button className="w-full">
-                                       {buttonContent}
-                                   </Button>
-                               </AlertDialogTrigger>
-                               <AlertDialogContent>
-                                   <AlertDialogHeader>
-                                       <AlertDialogTitle>Invite a Friend</AlertDialogTitle>
-                                       <AlertDialogDescription>
-                                          <div>
-                                            <p><span className='font-semibold text-foreground'>Cipher IQ:</span> {SHARE_MESSAGE}</p>
-                                            <p className="mt-2">Share the app and earn coins!</p>
-                                          </div>
-                                       </AlertDialogDescription>
-                                   </AlertDialogHeader>
-                                   <div className="space-y-4">
-                                        <Card>
-                                            <CardContent className="flex items-center gap-4 p-3">
-                                                <Image src="https://files.catbox.moe/romunz.png" alt="Cipher IQ Icon" width={48} height={48} className="rounded-lg"/>
-                                                <div className="text-sm font-semibold truncate">{INVITE_URL}</div>
-                                            </CardContent>
-                                        </Card>
-                                        <div className="flex justify-center">
-                                            {isQrLoading ? <Skeleton className="h-32 w-32" /> : (
-                                                qrCodeDataUrl && <Image src={qrCodeDataUrl} alt="Invite QR Code" width={128} height={128} />
-                                            )}
-                                        </div>
-                                   </div>
-                                   <AlertDialogFooter className='sm:justify-start gap-2'>
-                                       <AlertDialogCancel>Close</AlertDialogCancel>
-                                       <Button onClick={handleCopyInviteLink} className="w-full sm:w-auto">
-                                            <Copy className="mr-2 h-4 w-4" />
-                                            Copy Link
-                                       </Button>
-                                   </AlertDialogFooter>
-                               </AlertDialogContent>
-                           </AlertDialog>
-                       ) : option.isAd ? (
-                            hasVisitedAd ? (
-                                <Button className="w-full" onClick={() => handleFreeCoin(option)} disabled={isDisabled}>
-                                    {buttonContent}
-                                </Button>
-                            ) : (
-                                <Button asChild className="w-full" variant="outline" onClick={() => handleVisit(option.id)}>
-                                    <Link href={option.url!} target="_blank" rel="noopener noreferrer">
-                                        {option.actionText}
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
-                            )
+                       {option.isAd && !hasVisitedAd ? (
+                            <Button asChild className="w-full" variant="outline" onClick={() => handleVisit(option.id)}>
+                                <Link href={option.url!} target="_blank" rel="noopener noreferrer">
+                                    {option.actionText}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
                        ) : (
                          <Button 
                             className="w-full"
