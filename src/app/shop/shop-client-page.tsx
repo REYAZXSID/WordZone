@@ -21,6 +21,7 @@ import {
 import { useSound } from '@/hooks/use-sound';
 import { Separator } from '@/components/ui/separator';
 import { useUserData } from '@/hooks/use-user-data';
+import { saveUserData } from '@/lib/user-data';
 
 type ShopItem = {
   id: string;
@@ -75,6 +76,9 @@ export function ShopClientPage() {
     }
 
     const newCoinBalance = userData.coins - item.cost + (item.type === 'coinpack' ? item.amount || 0 : 0);
+    
+    // Update user data object and standalone coin item in localStorage
+    saveUserData({ coins: newCoinBalance });
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
     if (item.type === 'powerup') {
@@ -83,14 +87,15 @@ export function ShopClientPage() {
         localStorage.setItem('crypto_powerups', JSON.stringify(inventory));
         playSound('purchase');
         toast({ title: 'Purchase Successful!', description: `You bought ${item.name}.` });
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_powerups' }));
     } else {
         playSound('coin');
         toast({ title: 'Coins Added!', description: `You received ${item.amount} coins.` });
     }
     
-    // Manually trigger a storage event to ensure immediate update
+    // Manually trigger a storage event to ensure immediate update across all tabs/components
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data' }));
     window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_powerups' }));
   };
 
   if (!isClient || !userData) return null;
@@ -156,7 +161,7 @@ export function ShopClientPage() {
                   <Coins className="h-5 w-5 text-yellow-500" />
                   +{pack.amount}
                 </div>
-                <Button onClick={() => handlePurchase(pack)} disabled={userData.coins < pack.cost}>
+                <Button onClick={() => handlePurchase(pack)} disabled={pack.cost > 0 && userData.coins < pack.cost}>
                   {pack.cost > 0 ? `Buy for ${pack.cost}` : 'Get Free'}
                 </Button>
               </CardContent>
