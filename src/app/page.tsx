@@ -65,6 +65,8 @@ export default function Home() {
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
             <svg
               xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -73,12 +75,26 @@ export default function Home() {
               strokeLinejoin="round"
               className="h-12 w-12"
             >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" />
+              <path d="M12 2a3 3 0 0 0-3 3v1" />
+              <path d="M12 18a3 3 0 0 0 3 3v1" />
+              <path d="M21 9a3 3 0 0 0-3-3h-1" />
+              <path d="M6 15a3 3 0 0 0-3 3H2" />
+              <path d="M3 9a3 3 0 0 1 3-3h1" />
+              <path d="M18 15a3 3 0 0 1 3 3h1" />
+              <path d="M9 6a3 3 0 0 1 3-3v1" />
+              <path d="M9 18a3 3 0 0 0 3 3v-1" />
+              <path d="m15 6 3-3" />
+              <path d="m6 18 3 3" />
+              <path d="M12 6V3" />
+              <path d="M12 21v-3" />
+              <path d="M21 12h-3" />
+              <path d="M6 12H3" />
+              <path d="M16 9.5a2.5 2.5 0 0 1-5 0" />
+              <path d="M16 14.5a2.5 2.5 0 0 1-5 0" />
             </svg>
           </div>
           <h1 className="text-6xl font-bold tracking-tight">
-            <span className="animated-gradient-text">Cryptify</span>
+            <span className="animated-gradient-text">Cipher IQ</span>
           </h1>
           <p className="mt-4 max-w-md text-lg text-muted-foreground">
             Sharpen your mind with daily cryptographic challenges. Decode quotes, unlock achievements, and climb the leaderboard.

@@ -6,8 +6,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Cryptify',
-  description: 'Sharpen your mind with daily cryptographic challenges on Cryptify.',
+  title: 'Cipher IQ',
+  description: 'Sharpen your mind with daily cryptographic challenges on Cipher IQ.',
 };
 
 export default function RootLayout({
