@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Menu, ArrowRight, BookOpen } from 'lucide-react';
+import { Menu, ArrowRight, BookOpen, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -63,35 +63,7 @@ export default function Home() {
       <main className="flex flex-1 items-center justify-center z-0">
         <div className="flex flex-col items-center text-center p-6">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-12 w-12"
-            >
-              <path d="M12 2a3 3 0 0 0-3 3v1" />
-              <path d="M12 18a3 3 0 0 0 3 3v1" />
-              <path d="M21 9a3 3 0 0 0-3-3h-1" />
-              <path d="M6 15a3 3 0 0 0-3 3H2" />
-              <path d="M3 9a3 3 0 0 1 3-3h1" />
-              <path d="M18 15a3 3 0 0 1 3 3h1" />
-              <path d="M9 6a3 3 0 0 1 3-3v1" />
-              <path d="M9 18a3 3 0 0 0 3 3v-1" />
-              <path d="m15 6 3-3" />
-              <path d="m6 18 3 3" />
-              <path d="M12 6V3" />
-              <path d="M12 21v-3" />
-              <path d="M21 12h-3" />
-              <path d="M6 12H3" />
-              <path d="M16 9.5a2.5 2.5 0 0 1-5 0" />
-              <path d="M16 14.5a2.5 2.5 0 0 1-5 0" />
-            </svg>
+             <BrainCircuit className="h-12 w-12" />
           </div>
           <h1 className="text-6xl font-bold tracking-tight">
             <span className="animated-gradient-text">Cipher IQ</span>
@@ -120,10 +92,7 @@ export default function Home() {
       <footer className="w-full p-6 z-10">
         <div className="mx-auto max-w-lg">
             <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-            <a 
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
+            <div 
                 className="mt-6 flex items-center justify-center gap-4 group"
             >
                 <Image 
@@ -137,7 +106,7 @@ export default function Home() {
                 <span className="font-semibold text-foreground/80 transition-colors duration-300 group-hover:text-primary">
                     Built by Sid
                 </span>
-            </a>
+            </div>
         </div>
       </footer>
     </div>

@@ -6,7 +6,7 @@ import { invertCipher, getCipherLetterToNumberMap } from '@/lib/puzzles';
 import { generatePuzzleHint } from '@/ai/flows/generate-puzzle-hint';
 import React, { useState, useTransition, useEffect, useCallback, useMemo } from 'react';
 import { Button } from './ui/button';
-import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart, Settings, Heart, Frown } from 'lucide-react';
+import { Lightbulb, PartyPopper, ArrowRight, Home, RefreshCw, Coins, ShoppingCart, Settings, Heart, Frown, BrainCircuit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -23,6 +23,7 @@ import { PowerUpBar } from './power-up-bar';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 import { useUserData } from '@/hooks/use-user-data';
+import { saveUserData, updateUserStat } from '@/lib/user-data';
 
 
 type GameBoardProps = {
@@ -48,7 +49,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [startTime, setStartTime] = useState<number | null>(null);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const playSound = useSound();
-  const { userData, isClient } = useUserData();
+  const { userData, isClient, refreshUserData } = useUserData();
   const [powerUpInventory, setPowerUpInventory] = useState<Record<string, number>>({});
   const [lives, setLives] = useState(3);
   const [errorLetter, setErrorLetter] = useState<string | null>(null);
@@ -220,10 +221,11 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
      let toastDescription = '';
      let newGuesses = { ...userGuesses };
 
-     if (powerUpId === 'reveal_letter' || powerUpId === 'auto_fill') {
-        const unsolvedLetters = puzzleEncryptedLetters.filter(
-          (encrypted) => userGuesses[encrypted] !== solvedCipher[encrypted]
-        );
+     const unsolvedLetters = puzzleEncryptedLetters.filter(
+        (encrypted) => userGuesses[encrypted] !== solvedCipher[encrypted]
+     );
+
+     if (powerUpId === 'reveal_letter') {
         if (unsolvedLetters.length > 0) {
             const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
             const decrypted = solvedCipher[encrypted];
@@ -238,8 +240,24 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
             toastTitle = 'Letter Revealed!';
             toastDescription = `The letter '${decrypted}' has been placed.`;
         }
+     } else if (powerUpId === 'auto_fill') {
+         if (unsolvedLetters.length > 0) {
+            const encrypted = unsolvedLetters[Math.floor(Math.random() * unsolvedLetters.length)];
+            const decrypted = solvedCipher[encrypted];
+            
+            puzzleEncryptedLetters.forEach(encLetter => {
+                if (solvedCipher[encLetter] === decrypted) {
+                    newGuesses[encLetter] = decrypted;
+                }
+            });
+            updateGuesses(newGuesses);
+
+            success = true;
+            toastTitle = 'Auto-Filled Letter!';
+            toastDescription = `All instances of '${decrypted}' have been placed.`;
+         }
      } else if (powerUpId === 'remove_wrong') {
-        const wrongGuesses = Object.entries(userGuesses).filter(([enc, dec]) => solvedCipher[enc] !== dec);
+        const wrongGuesses = Object.entries(userGuesses).filter(([enc, dec]) => solvedCipher[enc] !== dec && ALPHABET.includes(dec));
         if (wrongGuesses.length > 0) {
             const toRemove = wrongGuesses.slice(0, 3);
             toRemove.forEach(([enc]) => {
@@ -258,7 +276,12 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
             const wordToShow = unsolvedWords[Math.floor(Math.random() * unsolvedWords.length)];
             wordToShow.split('').forEach(char => {
                 if (ALPHABET.includes(char)) {
-                    newGuesses[char] = solvedCipher[char];
+                    // Also clear any other guesses that would conflict
+                    const decrypted = solvedCipher[char];
+                    for (const key in newGuesses) {
+                        if (newGuesses[key] === decrypted) delete newGuesses[key];
+                    }
+                    newGuesses[char] = decrypted;
                 }
             });
             updateGuesses(newGuesses);
@@ -291,6 +314,9 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
         inventory[powerUpId] -= 1;
         localStorage.setItem('crypto_powerups', JSON.stringify(inventory));
         updatePowerUpInventory();
+        updateUserStat('hintsUsed', 1);
+        refreshUserData();
+
         playSound('powerup');
         toast({ title: toastTitle, description: toastDescription });
      } else {
