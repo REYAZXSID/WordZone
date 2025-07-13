@@ -388,3 +388,10 @@ body {
   filter: drop-shadow(0 0 5px hsl(var(--destructive))) drop-shadow(0 0 10px hsl(var(--destructive)));
 }
 
+.card-glow-intermediate {
+  box-shadow: 0 0 15px 2px hsla(28, 100%, 50%, 0.4);
+}
+
+.card-glow-advance {
+  box-shadow: 0 0 15px 2px hsla(270, 100%, 60%, 0.4);
+}
