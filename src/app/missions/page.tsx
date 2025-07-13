@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSound } from '@/hooks/use-sound';
-import { UserData } from '@/lib/user-data';
+import { UserData, saveUserData } from '@/lib/user-data';
 import { useUserData } from '@/hooks/use-user-data';
 import { isSameDay } from 'date-fns';
 
@@ -115,9 +115,7 @@ export default function MissionsPage() {
     if (!userData || claimedMissions.includes(mission.id)) return;
 
     // Add coins to balance
-    const currentCoins = userData.coins;
-    const newCoinBalance = currentCoins + mission.reward;
-    localStorage.setItem('crypto_coins', newCoinBalance.toString());
+    saveUserData({ coins: userData.coins + mission.reward });
 
     // Mark as claimed
     const newClaimed = [...claimedMissions, mission.id];
@@ -129,8 +127,6 @@ export default function MissionsPage() {
       title: 'Reward Claimed!',
       description: `You earned ${mission.reward} coins!`,
     });
-    // Manually trigger storage event
-    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
   };
 
   const renderTimer = () => {

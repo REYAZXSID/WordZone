@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { useSound } from '@/hooks/use-sound';
 import { useUserData } from '@/hooks/use-user-data';
+import { saveUserData } from '@/lib/user-data';
 
 
 type Reward = {
@@ -93,9 +94,7 @@ export function InboxClientPage() {
         if (!rewardToClaim || rewardToClaim.status === 'claimed' || !userData) return;
 
         // Update coin balance
-        const currentCoins = userData.coins;
-        const newCoinBalance = currentCoins + rewardToClaim.amount;
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
+        saveUserData({ coins: userData.coins + rewardToClaim.amount });
 
         // Update reward status
         const newRewards = rewards.map(r =>
@@ -109,7 +108,6 @@ export function InboxClientPage() {
             description: `You received ${rewardToClaim.amount} coins!`,
         });
         
-        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
         window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_rewards' }));
     };
 
@@ -135,9 +133,7 @@ export function InboxClientPage() {
         });
         
         // Update coin balance
-        const currentCoins = userData.coins;
-        const newCoinBalance = currentCoins + totalClaimedAmount;
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
+        saveUserData({ coins: userData.coins + totalClaimedAmount });
 
         updateRewards(newRewards);
         playSound('coin');
@@ -146,7 +142,6 @@ export function InboxClientPage() {
             description: `You received a total of ${totalClaimedAmount} coins!`,
         });
         
-        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
         window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_rewards' }));
     };
     

@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Flame, Calendar, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { updateUserStat, getUserData } from '@/lib/user-data';
+import { updateUserStat, getUserData, saveUserData } from '@/lib/user-data';
 import { addDays, isSameDay, startOfDay } from 'date-fns';
 
 const puzzle = getDailyPuzzle();
@@ -86,10 +86,8 @@ export default function DailyPage() {
     savedDates.push(today.toISOString());
     localStorage.setItem('crypto_completed_dates', JSON.stringify(savedDates));
 
-    const coins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
     const reward = 40; // Daily puzzle reward
-    const newCoinBalance = coins + reward;
-    localStorage.setItem('crypto_coins', newCoinBalance.toString());
+    saveUserData({ coins: userData.coins + reward });
     
     toast({
       title: 'Daily Puzzle Complete!',

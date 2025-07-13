@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { CoinShopClientPage } from './coin-shop-client-page';
 import { Suspense } from 'react';

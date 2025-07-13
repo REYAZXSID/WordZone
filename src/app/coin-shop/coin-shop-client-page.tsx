@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useSound } from '@/hooks/use-sound';
 import { useUserData } from '@/hooks/use-user-data';
+import { saveUserData } from '@/lib/user-data';
 
 
 type CoinPack = {
@@ -45,8 +46,7 @@ export function CoinShopClientPage() {
     if (!userData) return;
 
     const newCoinBalance = userData.coins + pack.amount;
-    localStorage.setItem('crypto_coins', newCoinBalance.toString());
-    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+    saveUserData({ coins: newCoinBalance });
     playSound('coin');
     
     toast({
@@ -59,8 +59,7 @@ export function CoinShopClientPage() {
       if (!userData) return;
       
       const newCoinBalance = userData.coins + option.reward;
-      localStorage.setItem('crypto_coins', newCoinBalance.toString());
-      window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+      saveUserData({ coins: newCoinBalance });
       playSound('coin');
       toast({
           title: 'Coins Claimed!',

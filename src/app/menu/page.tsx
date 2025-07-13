@@ -61,6 +61,12 @@ const menuItems: MenuItem[] = [
     icon: <ShoppingCart className="h-8 w-8 text-green-500" />,
   },
   {
+    name: 'Coin Shop',
+    description: 'Get more coins to use in the game.',
+    href: '/coin-shop',
+    icon: <CoinsIcon className="h-8 w-8 text-yellow-500" />,
+  },
+  {
     name: 'Leaderboard',
     description: 'See how you rank against other players.',
     href: '/leaderboard',

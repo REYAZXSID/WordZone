@@ -132,11 +132,7 @@ export function StreaksClientPage() {
     const handleClaimMilestone = (milestone: StreakMilestone) => {
         if (!userData || currentStreak < milestone.days || claimedMilestones.includes(milestone.days)) return;
 
-        const newCoinBalance = userData.coins + milestone.reward;
-        saveUserData({ coins: newCoinBalance });
-        localStorage.setItem('crypto_coins', newCoinBalance.toString());
-        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
-
+        saveUserData({ coins: userData.coins + milestone.reward });
 
         const newClaimed = [...claimedMilestones, milestone.days];
         setClaimedMilestones(newClaimed);
