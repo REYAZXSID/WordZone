@@ -324,6 +324,17 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   }
 
   const usedLetters = Object.values(userGuesses);
+  
+  const handleTryAgain = () => {
+    setUserGuesses({});
+    setHistory([]);
+    setSelectedLetter(null);
+    setIsComplete(false);
+    setShowGameOverDialog(false);
+    setLives(3);
+    setStartTime(Date.now());
+    playSound('swoosh');
+  };
 
   return (
     <>
@@ -412,7 +423,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                   <AlertDialogTitle className="text-3xl font-bold">
                     {isDailyChallenge ? 'Challenge Complete!' : 'Level Complete!'}
                   </AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription asChild>
                     <div className="space-y-4 text-card-foreground dark:text-card-foreground">
                       {coinsEarned > 0 && (
                         <div className="flex items-center justify-center gap-2 text-lg font-semibold text-yellow-500">
@@ -433,7 +444,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
               </AlertDialogHeader>
               <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
                   <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" onClick={() => { if(onPlayAgain) { resetGame(true); onPlayAgain(); } }}>
+                      <Button variant="outline" onClick={() => { if(onPlayAgain) { handleTryAgain(); } }}>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Play Again
                       </Button>
@@ -463,13 +474,13 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                     </div>
                     <div className="space-y-2">
                         <AlertDialogTitle className="text-3xl font-bold">Game Over</AlertDialogTitle>
-                        <AlertDialogDescription className="text-base">
+                        <AlertDialogDescription>
                             You've run out of lives. Better luck next time!
                         </AlertDialogDescription>
                     </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
-                    <Button variant="outline" onClick={() => { resetGame(true); playSound('swoosh'); }}>
+                    <Button variant="outline" onClick={() => { handleTryAgain(); }}>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Play Again
                     </Button>

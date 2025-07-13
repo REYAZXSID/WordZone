@@ -17,7 +17,6 @@ const POWERUPS: (PowerUpDefinition & { allowedDifficulties: Difficulty[] })[] = 
   { id: 'auto_fill', name: 'Auto-Fill Letter', icon: <Target />, colorClass: 'border-blue-500/50 text-blue-500', allowedDifficulties: ['hard', 'intermediate', 'advance'] },
   { id: 'show_word', name: 'Show Word Hint', icon: <FileText />, colorClass: 'border-indigo-500/50 text-indigo-500', allowedDifficulties: ['intermediate', 'advance'] },
   { id: 'solve_puzzle', name: 'Solve Puzzle', icon: <Sparkles />, colorClass: 'border-purple-500/50 text-purple-500', allowedDifficulties: ['intermediate', 'advance'] },
-  { id: 'hint_pack', name: 'Hint Pack', icon: <Package />, colorClass: 'border-orange-500/50 text-orange-500', allowedDifficulties: ['easy', 'medium', 'hard', 'intermediate', 'advance'] },
 ];
 
 

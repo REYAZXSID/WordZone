@@ -35,7 +35,7 @@ export default function LevelSelectionPage() {
   if (!isClient) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <PageHeader title={`Select Level - ${difficultyTitle}`} />
+        <PageHeader title={`${difficultyTitle} Levels`} />
         <main className="flex-1 p-4 sm:p-6">
           <div className="mx-auto grid max-w-4xl grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8">
             {levels.map((level) => (
