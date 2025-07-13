@@ -65,12 +65,6 @@ const menuItems: MenuItem[] = [
     href: '/leaderboard',
     icon: <Trophy className="h-8 w-8 text-amber-500" />,
   },
-  {
-    name: 'Profile',
-    description: 'View your stats and progress.',
-    href: '/profile',
-    icon: <User className="h-8 w-8 text-primary" />,
-  },
    {
     name: 'Feedback & Report',
     description: 'Send suggestions or report bugs.',

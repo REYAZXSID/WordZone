@@ -32,7 +32,18 @@ const generateMockData = (count: number): Omit<LeaderboardEntry, 'isCurrentUser'
   }));
 };
 
-const mockAllTime = generateMockData(50);
+const mockAllTimeData = generateMockData(50);
+// For demo purposes, we add a "current user" to the list.
+const mockUserEntry: LeaderboardEntry = {
+  rank: 231,
+  username: "You",
+  avatar: `https://i.pravatar.cc/150?u=currentuser`,
+  score: 1234,
+  isCurrentUser: true,
+};
+
+const mockAllTime = [...mockAllTimeData, mockUserEntry].sort((a,b) => b.score - a.score).map((u,i) => ({...u, rank: i+1}));
+
 
 const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-500 fill-yellow-400" />;
@@ -44,31 +55,10 @@ const RankIcon = ({ rank }: { rank: number }) => {
 
 export function LeaderboardClientPage() {
   const [isClient, setIsClient] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ username: string; } | null>(null);
-
+  
   useEffect(() => {
     setIsClient(true);
-    const userProfile = JSON.parse(localStorage.getItem('crypto_user') || 'null');
-    if (userProfile) {
-      setCurrentUser(userProfile);
-    }
   }, []);
-
-  const leaderboardDataWithUser = mockAllTime.map(entry => ({
-    ...entry,
-    isCurrentUser: entry.username === currentUser?.username,
-  }));
-  
-  // If current user is not in top 50, add them at a lower rank for demonstration
-  if (currentUser && !leaderboardDataWithUser.some(e => e.isCurrentUser)) {
-    leaderboardDataWithUser.push({
-        rank: 231,
-        username: currentUser.username,
-        avatar: '', // will fallback
-        score: parseInt(localStorage.getItem('crypto_coins') || '200') + (JSON.parse(localStorage.getItem('completedLevels_easy') || '[]').length * 100),
-        isCurrentUser: true
-    })
-  }
 
   if (!isClient) {
     return (
@@ -131,13 +121,13 @@ export function LeaderboardClientPage() {
           <TabsTrigger value="all-time">All Time</TabsTrigger>
         </TabsList>
         <TabsContent value="daily" className="mt-4">
-          {renderLeaderboard(leaderboardDataWithUser.slice(0, 15).sort(() => Math.random() - 0.5).map((u, i) => ({...u, rank: i+1})))}
+          {renderLeaderboard(mockAllTime.slice(0, 15).sort(() => Math.random() - 0.5).map((u, i) => ({...u, rank: i+1})))}
         </TabsContent>
         <TabsContent value="weekly" className="mt-4">
-          {renderLeaderboard(leaderboardDataWithUser.slice(0, 30).sort(() => Math.random() - 0.5).map((u, i) => ({...u, rank: i+1})))}
+          {renderLeaderboard(mockAllTime.slice(0, 30).sort(() => Math.random() - 0.5).map((u, i) => ({...u, rank: i+1})))}
         </TabsContent>
         <TabsContent value="all-time" className="mt-4">
-          {renderLeaderboard(leaderboardDataWithUser)}
+          {renderLeaderboard(mockAllTime)}
         </TabsContent>
       </Tabs>
     </div>

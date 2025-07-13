@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GameBoard } from '@/components/game-board';
-import { getPuzzleForLevel, getTotalPuzzles } from '@/lib/puzzles';
+import { getPuzzleForLevel } from '@/lib/puzzles';
 import type { Puzzle, Difficulty } from '@/lib/puzzles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +42,8 @@ export function GameScreen() {
         if (puzzle?.difficulty === 'easy') reward = 15;
         if (puzzle?.difficulty === 'medium') reward = 25;
         if (puzzle?.difficulty === 'hard') reward = 50;
+        if (puzzle?.difficulty === 'intermediate') reward = 75;
+        if (puzzle?.difficulty === 'advance') reward = 100;
 
         let totalReward = reward;
 
@@ -74,9 +76,11 @@ export function GameScreen() {
   };
 
   const handleNextLevel = () => {
-    const totalPuzzles = getTotalPuzzles(difficulty);
     if (level < 50) { // 50 total levels
       router.push(`/game?difficulty=${difficulty}&level=${level + 1}`);
+    } else {
+        toast({ title: "Congratulations!", description: `You have completed all levels for ${difficulty} difficulty.`});
+        router.push('/game/category');
     }
   };
 
@@ -103,9 +107,9 @@ export function GameScreen() {
                     ))}
                  </div>
                  <div className="w-full max-w-sm mx-auto p-2">
-                    <div className="grid grid-cols-6 gap-2">
+                    <div className="grid grid-cols-7 gap-1.5">
                          {[...Array(26)].map((_, i) => (
-                            <Skeleton key={i} className="h-9 w-full rounded-md" />
+                            <Skeleton key={i} className="h-10 w-full rounded-md" />
                         ))}
                     </div>
                  </div>

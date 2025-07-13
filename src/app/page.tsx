@@ -36,12 +36,6 @@ export default function Home() {
       </div>
       
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-end z-10 gap-2">
-         <Button asChild variant="ghost" size="icon">
-          <Link href="/login">
-            <User className="h-6 w-6" />
-            <span className="sr-only">Login</span>
-          </Link>
-        </Button>
         <ThemeToggle />
         <Button asChild variant="ghost" size="icon">
           <Link href="/menu">
