@@ -183,23 +183,45 @@ export function CoinShopClientPage() {
         const shareData = {
             title: 'Cipher IQ',
             text: 'Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard. Download it here:',
-            url: 'https://example.com/cipher-iq.apk' // Replace with your actual APK URL
+            url: 'https://example.com/cipher-iq.apk'
         };
 
         try {
-            if (navigator.share) {
+            const iconUrl = 'https://files.catbox.moe/romunz.png';
+            const response = await fetch(iconUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'cipher-iq-icon.png', { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ ...shareData, files: [file] });
+                toast({ title: "Thanks for sharing!", description: "You've received a reward." });
+                handleRewardClaim(100, 'referral', false);
+            } else if (navigator.share) {
                 await navigator.share(shareData);
                 toast({ title: "Thanks for sharing!", description: "You've received a reward." });
-                handleRewardClaim(100, 'referral', false); // Assume not a one-time thing unless specified
+                handleRewardClaim(100, 'referral', false);
             } else {
-                // Fallback for browsers that don't support Web Share API
                 await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
                 toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
                  handleRewardClaim(100, 'referral', false);
             }
         } catch (error) {
             console.error('Error sharing:', error);
-            toast({ variant: 'destructive', title: "Sharing Failed", description: "Could not share at this moment." });
+            // Fallback for cases where fetch might fail or share is cancelled
+            try {
+              if (navigator.share) {
+                  await navigator.share(shareData);
+                  toast({ title: "Thanks for sharing!", description: "You've received a reward." });
+                  handleRewardClaim(100, 'referral', false);
+              } else {
+                  await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                  toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
+                  handleRewardClaim(100, 'referral', false);
+              }
+            } catch (shareError) {
+              console.error('Fallback sharing failed:', shareError);
+              toast({ variant: 'destructive', title: "Sharing Failed", description: "Could not share at this moment." });
+            }
         }
   };
   
