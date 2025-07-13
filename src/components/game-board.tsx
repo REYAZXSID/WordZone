@@ -22,6 +22,7 @@ import { useSound } from '@/hooks/use-sound';
 import { PowerUpBar } from './power-up-bar';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
+import { useUserData } from '@/hooks/use-user-data';
 
 
 type GameBoardProps = {
@@ -40,25 +41,18 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   const [userGuesses, setUserGuesses] = useState<Record<string, string>>({});
   const [history, setHistory] = useState<Record<string, string>[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showWinDialog, setShowWinDialog] = useState(false);
   const [animateCorrect, setAnimateCorrect] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [coins, setCoins] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const playSound = useSound();
+  const { userData, isClient } = useUserData();
   const [powerUpInventory, setPowerUpInventory] = useState<Record<string, number>>({});
   const [lives, setLives] = useState(3);
   const [errorLetter, setErrorLetter] = useState<string | null>(null);
   const [showGameOverDialog, setShowGameOverDialog] = useState(false);
-
-  const updateCoins = useCallback(() => {
-    const savedCoins = localStorage.getItem('crypto_coins');
-    setCoins(parseInt(savedCoins || '200', 10));
-  }, []);
 
   const updatePowerUpInventory = useCallback(() => {
      const inventory = JSON.parse(localStorage.getItem('crypto_powerups') || '{}');
@@ -66,15 +60,10 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
   }, []);
 
   useEffect(() => {
-    setIsClient(true);
-    updateCoins();
     updatePowerUpInventory();
     
-    // Listen for storage changes to keep coins in sync across tabs/components
+    // Listen for storage changes to keep power-ups in sync
     const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'crypto_coins') {
-            updateCoins();
-        }
         if (e.key === 'crypto_powerups') {
             updatePowerUpInventory();
         }
@@ -83,7 +72,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [updateCoins, updatePowerUpInventory]);
+  }, [updatePowerUpInventory]);
 
 
   const solvedCipher = useMemo(() => invertCipher(puzzle.cipher), [puzzle.cipher]);
@@ -164,7 +153,6 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
       totalReward = onGameComplete(durationInSeconds);
     }
     
-    setCoins(prevCoins => prevCoins + totalReward);
     setCoinsEarned(totalReward);
     setIsComplete(true);
     setShowWinDialog(true);
@@ -317,7 +305,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     <>
       <PageHeader
         title={isDailyChallenge ? 'Daily Puzzle' : `Level ${level}`}
-        coins={coins}
+        coins={userData?.coins}
         lives={lives}
         isClient={isClient}
       />

@@ -9,7 +9,9 @@ import { CheckCircle2, Medal, Puzzle, Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/use-sound';
-import { saveUserData, getUserData, UserData } from '@/lib/user-data';
+import { saveUserData, UserData } from '@/lib/user-data';
+import { useUserData } from '@/hooks/use-user-data';
+
 
 export type Achievement = {
   id: string;
@@ -96,30 +98,19 @@ export const initialAchievements: Achievement[] = [
 
 
 export function AchievementsClientPage() {
-    const [isClient, setIsClient] = useState(false);
+    const { userData, isClient } = useUserData();
     const { toast } = useToast();
     const playSound = useSound();
-    const [userData, setUserData] = useState<UserData>(getUserData());
 
     useEffect(() => {
-        setIsClient(true);
-        const handleStorageChange = () => {
-             setUserData(getUserData());
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
-    
-    useEffect(() => {
-        if (!isClient) return;
+        if (!isClient || !userData) return;
 
-        const currentData = getUserData();
-        const savedUnlocked = new Set(currentData.unlockedAchievements);
+        const savedUnlocked = new Set(userData.unlockedAchievements);
         let newlyUnlocked: string[] = [];
         let totalReward = 0;
 
         initialAchievements.forEach(ach => {
-            if (!savedUnlocked.has(ach.id) && ach.isUnlocked(currentData)) {
+            if (!savedUnlocked.has(ach.id) && ach.isUnlocked(userData)) {
                 newlyUnlocked.push(ach.id);
                 totalReward += ach.reward;
                  toast({
@@ -131,19 +122,22 @@ export function AchievementsClientPage() {
         });
 
         if (newlyUnlocked.length > 0) {
-            const allUnlocked = [...currentData.unlockedAchievements, ...newlyUnlocked];
-            const currentCoins = currentData.coins;
-            const newCoinBalance = currentCoins + totalReward;
+            const allUnlocked = [...userData.unlockedAchievements, ...newlyUnlocked];
+            const newCoinBalance = userData.coins + totalReward;
             
             saveUserData({ 
                 unlockedAchievements: allUnlocked,
                 coins: newCoinBalance 
             });
             localStorage.setItem('crypto_coins', newCoinBalance.toString());
-            setUserData(getUserData()); // Refresh state
+            // Manually trigger storage event for other components
+            window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data' }));
+            window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
         }
-    }, [isClient, toast, playSound, userData.stats]); // Depend on stats to re-check on change
+    }, [isClient, toast, playSound, userData]);
     
+    if (!isClient || !userData) return null;
+
     const achievementsWithProgress = initialAchievements.map(ach => {
         const { current, target } = ach.getProgress(userData);
         const isCompleted = userData.unlockedAchievements.includes(ach.id);
@@ -196,8 +190,6 @@ export function AchievementsClientPage() {
         )
     };
     
-    if (!isClient) return null;
-
     const inProgress = achievementsWithProgress.filter(a => !a.isCompleted);
     const completed = achievementsWithProgress.filter(a => a.isCompleted);
 

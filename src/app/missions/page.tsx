@@ -10,7 +10,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSound } from '@/hooks/use-sound';
-import { getUserData } from '@/lib/user-data';
+import { UserData } from '@/lib/user-data';
+import { useUserData } from '@/hooks/use-user-data';
 import { isSameDay } from 'date-fns';
 
 type Mission = {
@@ -19,7 +20,7 @@ type Mission = {
   icon: React.ReactNode;
   reward: number;
   targetProgress: number;
-  getProgress: (userData: ReturnType<typeof getUserData>, dailyCompleted: boolean) => number;
+  getProgress: (userData: UserData, dailyCompleted: boolean) => number;
 };
 
 const initialMissions: Mission[] = [
@@ -50,19 +51,15 @@ const initialMissions: Mission[] = [
 ];
 
 export default function MissionsPage() {
-  const [isClient, setIsClient] = useState(false);
+  const { userData, isClient } = useUserData();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [claimedMissions, setClaimedMissions] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const { toast } = useToast();
   const playSound = useSound();
-  const [userData, setUserDataState] = useState(getUserData());
   const [isDailyCompleted, setIsDailyCompleted] = useState(false);
 
   const refreshData = useCallback(() => {
-    const data = getUserData();
-    setUserDataState(data);
-    
     const lastCompletionStr = localStorage.getItem('crypto_daily_completed_date');
     setIsDailyCompleted(lastCompletionStr ? isSameDay(new Date(lastCompletionStr), new Date()) : false);
 
@@ -71,47 +68,54 @@ export default function MissionsPage() {
   }, []);
 
   useEffect(() => {
-    setIsClient(true);
-    refreshData();
-    setMissions(initialMissions);
-
-    const handleStorageChange = () => {
+    if (isClient) {
         refreshData();
-    };
+    }
+  }, [isClient, refreshData, userData]);
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    const timerInterval = setInterval(() => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(now.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      const diff = tomorrow.getTime() - now.getTime();
-      
-      if (diff <= 0) { // If it's a new day
-        localStorage.removeItem('crypto_claimed_missions');
-        setClaimedMissions([]);
-        refreshData();
-      }
+  useEffect(() => {
+    if (isClient) {
+        setMissions(initialMissions);
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'crypto_daily_completed_date' || e.key === 'crypto_claimed_missions') {
+                refreshData();
+            }
+        };
 
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        window.addEventListener('storage', handleStorageChange);
+        
+        const timerInterval = setInterval(() => {
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const diff = tomorrow.getTime() - now.getTime();
+        
+        if (diff <= 0) { // If it's a new day
+            localStorage.removeItem('crypto_claimed_missions');
+            setClaimedMissions([]);
+            refreshData();
+        }
 
-      setTimeLeft({ hours, minutes, seconds });
-    }, 1000);
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    return () => {
-        clearInterval(timerInterval);
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [refreshData]);
+        setTimeLeft({ hours, minutes, seconds });
+        }, 1000);
+
+        return () => {
+            clearInterval(timerInterval);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }
+  }, [isClient, refreshData]);
   
   const handleClaimReward = (mission: Mission) => {
-    if (claimedMissions.includes(mission.id)) return;
+    if (!userData || claimedMissions.includes(mission.id)) return;
 
     // Add coins to balance
-    const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+    const currentCoins = userData.coins;
     const newCoinBalance = currentCoins + mission.reward;
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
@@ -125,11 +129,21 @@ export default function MissionsPage() {
       title: 'Reward Claimed!',
       description: `You earned ${mission.reward} coins!`,
     });
+    // Manually trigger storage event
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
   };
 
   const renderTimer = () => {
     if (!isClient) return "Loading...";
     return `${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')}`;
+  }
+
+  if (!isClient || !userData) {
+      return (
+        <div className="flex min-h-screen flex-col bg-background">
+          <PageHeader title="Daily Missions" />
+        </div>
+      );
   }
 
   return (

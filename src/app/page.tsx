@@ -7,27 +7,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useState, useEffect } from 'react';
-import { getUserData } from '@/lib/user-data';
+import { useUserData } from '@/hooks/use-user-data';
 
 export default function Home() {
+  const { userData } = useUserData();
   const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
 
   useEffect(() => {
-    // This runs on the client, after the component mounts
-    const userData = getUserData();
     if (userData && userData.avatar) {
       setAvatar(userData.avatar);
     }
-    
-    const handleStorageChange = () => {
-        const updatedUserData = getUserData();
-        if (updatedUserData && updatedUserData.avatar) {
-            setAvatar(updatedUserData.avatar);
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [userData]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background overflow-hidden">

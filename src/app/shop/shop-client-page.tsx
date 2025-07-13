@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Separator } from '@/components/ui/separator';
+import { useUserData } from '@/hooks/use-user-data';
 
 type ShopItem = {
   id: string;
@@ -56,48 +57,24 @@ const powerUps = shopItems.filter(item => item.type === 'powerup');
 const coinPacks = shopItems.filter(item => item.type === 'coinpack');
 
 export function ShopClientPage() {
-  const [isClient, setIsClient] = useState(false);
-  const [coins, setCoins] = useState(200);
+  const { userData, isClient } = useUserData();
   const { toast } = useToast();
   const playSound = useSound();
 
-  const updateCoinBalance = useCallback(() => {
-    const savedCoins = localStorage.getItem('crypto_coins');
-    if (savedCoins) {
-      setCoins(parseInt(savedCoins, 10));
-    } else {
-      localStorage.setItem('crypto_coins', '200');
-    }
-  }, []);
-
-  useEffect(() => {
-    setIsClient(true);
-    updateCoinBalance();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'crypto_coins') {
-        updateCoinBalance();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [updateCoinBalance]);
-
   const handlePurchase = (item: ShopItem) => {
-    if (coins < item.cost) {
+    if (!userData) return;
+
+    if (userData.coins < item.cost) {
       playSound('error');
       toast({
         variant: 'destructive',
         title: 'Insufficient Coins',
-        description: `You need ${item.cost - coins} more coins to buy ${item.name}.`,
+        description: `You need ${item.cost - userData.coins} more coins to buy ${item.name}.`,
       });
       return;
     }
 
-    const newCoinBalance = coins - item.cost + (item.type === 'coinpack' ? item.amount || 0 : 0);
-    setCoins(newCoinBalance);
+    const newCoinBalance = userData.coins - item.cost + (item.type === 'coinpack' ? item.amount || 0 : 0);
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
     if (item.type === 'powerup') {
@@ -110,9 +87,13 @@ export function ShopClientPage() {
         playSound('coin');
         toast({ title: 'Coins Added!', description: `You received ${item.amount} coins.` });
     }
+    
+    // Manually trigger a storage event to ensure immediate update
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_powerups' }));
   };
 
-  if (!isClient) return null;
+  if (!isClient || !userData) return null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -121,7 +102,7 @@ export function ShopClientPage() {
           <div className="text-lg text-muted-foreground font-semibold">Your Balance</div>
           <div className="flex items-center gap-2 text-2xl font-bold">
             <Coins className="h-7 w-7 text-yellow-500" />
-            <span>{coins.toLocaleString()}</span>
+            <span>{userData.coins.toLocaleString()}</span>
           </div>
         </CardContent>
       </Card>
@@ -145,7 +126,7 @@ export function ShopClientPage() {
                   <Coins className="h-5 w-5 text-yellow-500" />
                   {powerUp.cost}
                 </div>
-                <Button onClick={() => handlePurchase(powerUp)} disabled={coins < powerUp.cost}>
+                <Button onClick={() => handlePurchase(powerUp)} disabled={userData.coins < powerUp.cost}>
                   Buy
                 </Button>
               </CardContent>
@@ -175,7 +156,7 @@ export function ShopClientPage() {
                   <Coins className="h-5 w-5 text-yellow-500" />
                   +{pack.amount}
                 </div>
-                <Button onClick={() => handlePurchase(pack)} disabled={coins < pack.cost}>
+                <Button onClick={() => handlePurchase(pack)} disabled={userData.coins < pack.cost}>
                   {pack.cost > 0 ? `Buy for ${pack.cost}` : 'Get Free'}
                 </Button>
               </CardContent>

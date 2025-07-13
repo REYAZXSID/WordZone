@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { useSound } from '@/hooks/use-sound';
+import { useUserData } from '@/hooks/use-user-data';
+
 
 type Reward = {
     id: string;
@@ -62,23 +64,24 @@ const initialRewards: Reward[] = [
 ];
 
 export function InboxClientPage() {
-    const [isClient, setIsClient] = useState(false);
+    const { userData, isClient } = useUserData();
     const [rewards, setRewards] = useState<Reward[]>([]);
     const { toast } = useToast();
     const playSound = useSound();
 
     useEffect(() => {
-        setIsClient(true);
-        // Load rewards from localStorage or use initial for demo
-        const savedRewards = JSON.parse(localStorage.getItem('crypto_rewards') || 'null');
-        if (savedRewards) {
-            // Need to convert date strings back to Date objects
-            const parsedRewards = savedRewards.map((r: Reward) => ({ ...r, date: new Date(r.date) }));
-            setRewards(parsedRewards);
-        } else {
-            setRewards(initialRewards);
+        if (isClient) {
+            // Load rewards from localStorage or use initial for demo
+            const savedRewards = JSON.parse(localStorage.getItem('crypto_rewards') || 'null');
+            if (savedRewards) {
+                // Need to convert date strings back to Date objects
+                const parsedRewards = savedRewards.map((r: Reward) => ({ ...r, date: new Date(r.date) }));
+                setRewards(parsedRewards);
+            } else {
+                setRewards(initialRewards);
+            }
         }
-    }, []);
+    }, [isClient]);
 
     const updateRewards = (newRewards: Reward[]) => {
         setRewards(newRewards);
@@ -87,16 +90,16 @@ export function InboxClientPage() {
 
     const handleClaim = (rewardId: string) => {
         const rewardToClaim = rewards.find(r => r.id === rewardId);
-        if (!rewardToClaim || rewardToClaim.status === 'claimed') return;
+        if (!rewardToClaim || rewardToClaim.status === 'claimed' || !userData) return;
 
         // Update coin balance
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+        const currentCoins = userData.coins;
         const newCoinBalance = currentCoins + rewardToClaim.amount;
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
         // Update reward status
         const newRewards = rewards.map(r =>
-            r.id === rewardId ? { ...r, status: 'claimed' } : r
+            r.id === rewardId ? { ...r, status: 'claimed' as 'claimed' } : r
         );
         updateRewards(newRewards);
 
@@ -105,9 +108,14 @@ export function InboxClientPage() {
             title: 'Reward Claimed!',
             description: `You received ${rewardToClaim.amount} coins!`,
         });
+        
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_rewards' }));
     };
 
     const handleClaimAll = () => {
+        if (!userData) return;
+
         const pendingRewards = rewards.filter(r => r.status === 'pending');
         if (pendingRewards.length === 0) {
             toast({
@@ -118,8 +126,6 @@ export function InboxClientPage() {
         }
 
         let totalClaimedAmount = 0;
-        const claimedIds = new Set(pendingRewards.map(r => r.id));
-
         const newRewards = rewards.map(r => {
             if (r.status === 'pending') {
                 totalClaimedAmount += r.amount;
@@ -129,7 +135,7 @@ export function InboxClientPage() {
         });
         
         // Update coin balance
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
+        const currentCoins = userData.coins;
         const newCoinBalance = currentCoins + totalClaimedAmount;
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
 
@@ -139,6 +145,9 @@ export function InboxClientPage() {
             title: 'All Rewards Claimed!',
             description: `You received a total of ${totalClaimedAmount} coins!`,
         });
+        
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_rewards' }));
     };
     
     if (!isClient) return null;

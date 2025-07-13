@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSound } from '@/hooks/use-sound';
 import { getUserData, saveUserData } from '@/lib/user-data';
+import { useUserData } from '@/hooks/use-user-data';
+
 
 type StreakMilestone = {
     days: number;
@@ -62,11 +64,14 @@ const calculateStreaks = (dates: Date[]) => {
              if (diff === 1) {
                  tempStreak++;
              } else {
+                 if (tempStreak > bestStreak) {
+                    bestStreak = tempStreak;
+                 }
                  tempStreak = 1;
              }
-             if (tempStreak > bestStreak) {
-                 bestStreak = tempStreak;
-             }
+        }
+        if (tempStreak > bestStreak) {
+            bestStreak = tempStreak;
         }
     }
 
@@ -75,6 +80,7 @@ const calculateStreaks = (dates: Date[]) => {
 
 
 export function StreaksClientPage() {
+    const { userData } = useUserData();
     const [isClient, setIsClient] = useState(false);
     const [completedDates, setCompletedDates] = useState<Date[]>([]);
     const [currentStreak, setCurrentStreak] = useState(0);
@@ -92,13 +98,13 @@ export function StreaksClientPage() {
             const { current, best } = calculateStreaks(dates);
             setCurrentStreak(current);
 
-            const userData = getUserData();
-            const savedBest = userData.stats.bestStreak;
+            const currentUserData = getUserData();
+            const savedBest = currentUserData.stats.bestStreak;
             const newBest = Math.max(best, savedBest);
             setBestStreak(newBest);
             
-            if (newBest > savedBest || current !== userData.stats.dailyStreak) {
-                 saveUserData({ stats: { ...userData.stats, dailyStreak: current, bestStreak: newBest } });
+            if (newBest > savedBest || current !== currentUserData.stats.dailyStreak) {
+                 saveUserData({ stats: { ...currentUserData.stats, dailyStreak: current, bestStreak: newBest } });
             }
 
             const storedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_streaks') || '[]');
@@ -124,12 +130,13 @@ export function StreaksClientPage() {
     }, [loadData]);
 
     const handleClaimMilestone = (milestone: StreakMilestone) => {
-        if (currentStreak < milestone.days || claimedMilestones.includes(milestone.days)) return;
+        if (!userData || currentStreak < milestone.days || claimedMilestones.includes(milestone.days)) return;
 
-        const currentCoins = parseInt(localStorage.getItem('crypto_coins') || '200', 10);
-        const newCoinBalance = currentCoins + milestone.reward;
+        const newCoinBalance = userData.coins + milestone.reward;
         saveUserData({ coins: newCoinBalance });
         localStorage.setItem('crypto_coins', newCoinBalance.toString());
+        window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
+
 
         const newClaimed = [...claimedMilestones, milestone.days];
         setClaimedMilestones(newClaimed);

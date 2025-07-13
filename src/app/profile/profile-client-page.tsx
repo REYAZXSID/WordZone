@@ -28,11 +28,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { getUserData, saveUserData, resetUserData, UserData } from '@/lib/user-data';
+import { saveUserData, resetUserData, UserData } from '@/lib/user-data';
 import { initialAchievements, Achievement } from '../achievements/achievements-client-page';
 import { Flame, Star, Coins, CheckCircle2, BadgeCheck, Pen, Trash2, Gauge, Lightbulb, Badge as BadgeIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useUserData } from '@/hooks/use-user-data';
 
 const TIER_ICONS = {
   bronze: '🥉',
@@ -47,33 +48,15 @@ const TIER_COLORS = {
 };
 
 export function ProfileClientPage() {
-    const [isClient, setIsClient] = useState(false);
-    const [userData, setUserData] = useState<UserData | null>(null);
+    const { userData, isClient } = useUserData();
     const [tempUsername, setTempUsername] = useState('');
     const { toast } = useToast();
 
-    const refreshUserData = useCallback(() => {
-        const data = getUserData();
-        setUserData(data);
-        setTempUsername(data.username);
-    }, []);
-
     useEffect(() => {
-        setIsClient(true);
-        refreshUserData();
-
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'crypto_user_data' || e.key === 'crypto_coins') {
-                refreshUserData();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, [refreshUserData]);
+        if (userData) {
+            setTempUsername(userData.username);
+        }
+    }, [userData]);
 
     const handleProfileSave = () => {
         if (tempUsername.trim().length < 3) {
@@ -81,7 +64,6 @@ export function ProfileClientPage() {
             return;
         }
         saveUserData({ username: tempUsername });
-        refreshUserData();
         toast({ title: 'Profile Saved!', description: 'Your new username has been updated.' });
     };
 
@@ -101,12 +83,6 @@ export function ProfileClientPage() {
             });
     }, [userData]);
     
-    const recentBadge = useMemo(() => {
-        if (unlockedAchievements.length === 0) return null;
-        // This assumes achievements are unlocked in order. A more robust solution might use dates.
-        return unlockedAchievements[0];
-    }, [unlockedAchievements]);
-
     if (!isClient || !userData) {
         return null; // Let the Suspense fallback handle loading
     }

@@ -9,6 +9,7 @@ import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useSound } from '@/hooks/use-sound';
+import { useUserData } from '@/hooks/use-user-data';
 
 
 type CoinPack = {
@@ -36,40 +37,16 @@ const coinPacks: CoinPack[] = [
 ];
 
 export function CoinShopClientPage() {
-  const [isClient, setIsClient] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const { userData, isClient } = useUserData();
   const { toast } = useToast();
   const playSound = useSound();
 
-  const updateCoinBalance = useCallback(() => {
-    const savedCoins = localStorage.getItem('crypto_coins');
-    if (savedCoins) {
-      setCoins(parseInt(savedCoins, 10));
-    } else {
-        localStorage.setItem('crypto_coins', '200');
-        setCoins(200);
-    }
-  }, []);
-
-  useEffect(() => {
-    setIsClient(true);
-    updateCoinBalance();
-
-    const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'crypto_coins') {
-            updateCoinBalance();
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [updateCoinBalance]);
-
   const handlePurchase = (pack: CoinPack) => {
-    const newCoinBalance = coins + pack.amount;
-    setCoins(newCoinBalance);
+    if (!userData) return;
+
+    const newCoinBalance = userData.coins + pack.amount;
     localStorage.setItem('crypto_coins', newCoinBalance.toString());
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
     playSound('coin');
     
     toast({
@@ -79,9 +56,11 @@ export function CoinShopClientPage() {
   };
 
   const handleFreeCoin = (option: FreeCoinOption) => {
-      const newCoinBalance = coins + option.reward;
-      setCoins(newCoinBalance);
+      if (!userData) return;
+      
+      const newCoinBalance = userData.coins + option.reward;
       localStorage.setItem('crypto_coins', newCoinBalance.toString());
+      window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_coins' }));
       playSound('coin');
       toast({
           title: 'Coins Claimed!',
@@ -96,7 +75,7 @@ export function CoinShopClientPage() {
       { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" />, action: () => {} }
   ]
 
-  if (!isClient) return null;
+  if (!isClient || !userData) return null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -105,7 +84,7 @@ export function CoinShopClientPage() {
           <div className="text-sm text-muted-foreground font-semibold">Your Balance</div>
           <div className="flex items-center gap-2 text-2xl font-bold">
             <Coins className="h-7 w-7 text-yellow-500" />
-            <span>{coins.toLocaleString()}</span>
+            <span>{userData.coins.toLocaleString()}</span>
           </div>
         </CardContent>
       </Card>
