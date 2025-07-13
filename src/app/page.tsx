@@ -63,7 +63,7 @@ export default function Home() {
       <main className="flex flex-1 items-center justify-center z-0">
         <div className="flex flex-col items-center text-center p-6">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
-             <BrainCircuit className="h-12 w-12" />
+             <Image src="https://files.catbox.moe/wkgd6s.png" alt="Cipher IQ Logo" width={64} height={64} />
           </div>
           <h1 className="text-6xl font-bold tracking-tight">
             <span className="animated-gradient-text">Cipher IQ</span>
