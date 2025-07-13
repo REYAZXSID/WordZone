@@ -30,7 +30,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { getUserData, saveUserData, resetUserData, UserData } from '@/lib/user-data';
 import { initialAchievements, Achievement } from '../achievements/achievements-client-page';
-import { Flame, Star, Coins, CheckCircle2, ShieldCheck, Pen, Trash2, Gauge, Lightbulb, Badge as BadgeIcon } from 'lucide-react';
+import { Flame, Star, Coins, CheckCircle2, BadgeCheck, Pen, Trash2, Gauge, Lightbulb, Badge as BadgeIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -38,6 +38,12 @@ const TIER_ICONS = {
   bronze: '🥉',
   silver: '🥈',
   gold: '🥇',
+};
+
+const TIER_COLORS = {
+  bronze: 'text-orange-600',
+  silver: 'text-gray-400',
+  gold: 'text-yellow-500',
 };
 
 export function ProfileClientPage() {
@@ -81,18 +87,24 @@ export function ProfileClientPage() {
 
     const handleResetProgress = () => {
         resetUserData();
-        window.location.reload(); 
+        window.location.href = '/'; 
     };
 
     const unlockedAchievements = useMemo(() => {
         if (!userData) return [];
-        return initialAchievements.filter(ach => userData.unlockedAchievements.includes(ach.id));
+        return initialAchievements
+            .filter(ach => userData.unlockedAchievements.includes(ach.id))
+            .sort((a,b) => {
+                const aTier = a.tier === 'gold' ? 3 : a.tier === 'silver' ? 2 : 1;
+                const bTier = b.tier === 'gold' ? 3 : b.tier === 'silver' ? 2 : 1;
+                return bTier - aTier;
+            });
     }, [userData]);
     
     const recentBadge = useMemo(() => {
         if (unlockedAchievements.length === 0) return null;
         // This assumes achievements are unlocked in order. A more robust solution might use dates.
-        return unlockedAchievements[unlockedAchievements.length - 1];
+        return unlockedAchievements[0];
     }, [unlockedAchievements]);
 
     if (!isClient || !userData) {
@@ -113,7 +125,7 @@ export function ProfileClientPage() {
                             className="rounded-full border-4 border-primary/50 object-cover"
                         />
                         <div className="absolute bottom-0 right-0 rounded-full bg-blue-500 p-1.5 text-white ring-4 ring-background">
-                            <ShieldCheck className="h-5 w-5" />
+                            <BadgeCheck className="h-5 w-5" />
                         </div>
                     </div>
                     
@@ -191,24 +203,34 @@ export function ProfileClientPage() {
                     </div>
                 </CardContent>
             </Card>
-
-            {recentBadge && (
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                           <BadgeIcon className="h-6 w-6 text-green-500" /> Recent Badge
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center gap-4">
-                        <div className="text-4xl">{TIER_ICONS[recentBadge.tier]}</div>
-                        <div>
-                            <p className="font-semibold">{recentBadge.title}</p>
-                            <p className="text-sm text-muted-foreground">{recentBadge.description}</p>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <BadgeIcon className="h-6 w-6 text-green-500" /> Claimed Achievements
+                    </CardTitle>
+                </CardHeader>
+                 <CardContent>
+                    {unlockedAchievements.length > 0 ? (
+                        <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                            {unlockedAchievements.map((ach) => (
+                                <div key={ach.id} className="flex items-center gap-4 rounded-md bg-muted/50 p-3">
+                                    <div className="text-3xl">{TIER_ICONS[ach.tier]}</div>
+                                    <div>
+                                        <p className={cn("font-semibold", TIER_COLORS[ach.tier])}>{ach.title}</p>
+                                        <p className="text-sm text-muted-foreground">{ach.description}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </CardContent>
-                </Card>
-            )}
-
+                    ) : (
+                        <p className="text-center text-sm text-muted-foreground py-4">
+                            No achievements unlocked yet. Keep playing!
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+            
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full">
