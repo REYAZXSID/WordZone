@@ -33,6 +33,7 @@ type FreeCoinOption = {
     icon: React.ReactNode;
     isOneTime?: boolean;
     isAd?: boolean;
+    isInvite?: boolean;
     url?: string;
     actionText?: string;
 }
@@ -136,16 +137,34 @@ export function CoinShopClientPage() {
     });
   };
 
-  const handleFreeCoin = (option: FreeCoinOption) => {
+  const handleRewardClaim = (reward: number, id: string, isOneTime: boolean) => {
       if (!userData) return;
-      
+      if (isOneTime && claimedOneTime.includes(id)) return;
+
+      const newCoinBalance = userData.coins + reward;
+      saveUserData({ coins: newCoinBalance });
+
+      if (isOneTime) {
+          const newClaimed = [...claimedOneTime, id];
+          setClaimedOneTime(newClaimed);
+          localStorage.setItem('crypto_claimed_one_time', JSON.stringify(newClaimed));
+      }
+
+      playSound('coin');
+      toast({
+          title: 'Coins Claimed!',
+          description: `You received ${reward} free coins!`,
+      });
+  }
+
+  const handleFreeCoin = (option: FreeCoinOption) => {
       if (option.id === 'daily_reward') {
           if (dailyRewardTimeLeft) {
               toast({ variant: 'destructive', title: 'Daily reward not ready!', description: `Please wait until the timer runs out.` });
               return;
           }
           localStorage.setItem('crypto_daily_reward_claimed_at', Date.now().toString());
-          setDailyRewardTimeLeft('23:59:59'); // Set initial timer display
+          setDailyRewardTimeLeft('23:59:59');
       }
       
       if (option.id === 'watch_ad') {
@@ -154,32 +173,41 @@ export function CoinShopClientPage() {
               return;
           }
           localStorage.setItem('crypto_ad_reward_claimed_at', Date.now().toString());
-          setAdRewardTimeLeft('59:59'); // Set initial timer display
+          setAdRewardTimeLeft('59:59');
       }
 
-      if (option.isOneTime && claimedOneTime.includes(option.id)) return;
-      
-      const newCoinBalance = userData.coins + option.reward;
-      saveUserData({ coins: newCoinBalance });
-
-      if (option.isOneTime) {
-          const newClaimed = [...claimedOneTime, option.id];
-          setClaimedOneTime(newClaimed);
-          localStorage.setItem('crypto_claimed_one_time', JSON.stringify(newClaimed));
-      }
-
-      playSound('coin');
-      toast({
-          title: 'Coins Claimed!',
-          description: `You received ${option.reward} free coins!`,
-      });
+      handleRewardClaim(option.reward, option.id, !!option.isOneTime);
   }
+
+  const handleInviteFriend = async () => {
+        const shareData = {
+            title: 'Cipher IQ',
+            text: 'Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard. Download it here:',
+            url: 'https://example.com/cipher-iq.apk' // Replace with your actual APK URL
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                toast({ title: "Thanks for sharing!", description: "You've received a reward." });
+                handleRewardClaim(100, 'referral', false); // Assume not a one-time thing unless specified
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
+                 handleRewardClaim(100, 'referral', false);
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+            toast({ variant: 'destructive', title: "Sharing Failed", description: "Could not share at this moment." });
+        }
+  };
   
   const freeCoinOptions: FreeCoinOption[] = [
       { id: 'starter_pack', name: 'Starter Pack', description: 'A one-time gift to get you going!', reward: 250, icon: <Sparkles className="h-8 w-8 text-purple-500" />, isOneTime: true },
       { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 25, icon: <Video className="h-8 w-8 text-rose-500" />, isAd: true, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Watch Video' },
       { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" /> },
-      { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" /> }
+      { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" />, isInvite: true }
   ]
 
   if (!isClient || !userData) return null;
@@ -211,6 +239,7 @@ export function CoinShopClientPage() {
               if (isDailyRewardOnCooldown) return dailyRewardTimeLeft;
               if (isAdRewardOnCooldown) return adRewardTimeLeft;
               if (option.isAd && !hasVisitedAd) return option.actionText;
+              if (option.isInvite) return "Invite";
               return "Claim Now";
             }
             
@@ -232,7 +261,11 @@ export function CoinShopClientPage() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                       {option.isAd ? (
+                       {option.isInvite ? (
+                           <Button className="w-full" onClick={handleInviteFriend} disabled={isDisabled}>
+                             {buttonContent}
+                           </Button>
+                       ) : option.isAd ? (
                             hasVisitedAd ? (
                                 <Button className="w-full" onClick={() => handleFreeCoin(option)} disabled={isDisabled}>
                                     {buttonContent}
