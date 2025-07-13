@@ -64,7 +64,7 @@ export function ShopClientPage() {
   const handlePurchase = (item: ShopItem) => {
     if (!userData) return;
 
-    if (userData.coins < item.cost) {
+    if (item.cost > 0 && userData.coins < item.cost) {
       playSound('error');
       toast({
         variant: 'destructive',
