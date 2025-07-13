@@ -70,6 +70,7 @@ export function CoinShopClientPage() {
   const playSound = useSound();
 
   const INVITE_URL = 'https://example.com/cipher-iq.apk';
+  const SHARE_MESSAGE = "Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard.";
 
   useEffect(() => {
     if (isClient) {
@@ -197,9 +198,9 @@ export function CoinShopClientPage() {
   }
 
   const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText(INVITE_URL)
+    navigator.clipboard.writeText(`${SHARE_MESSAGE} Download at: ${INVITE_URL}`)
         .then(() => {
-            toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard." });
+            toast({ title: "Link Copied!", description: "The invite link and message have been copied." });
             handleRewardClaim(100, 'referral', false); // Reward on copy
         })
         .catch(err => {
@@ -291,7 +292,10 @@ export function CoinShopClientPage() {
                                    <AlertDialogHeader>
                                        <AlertDialogTitle>Invite a Friend</AlertDialogTitle>
                                        <AlertDialogDescription>
-                                           Share the app with your friends and earn coins when they join!
+                                          <span className='font-semibold text-foreground'>Cipher IQ:</span> {SHARE_MESSAGE}
+                                       </AlertDialogDescription>
+                                       <AlertDialogDescription>
+                                          Share the app and earn coins!
                                        </AlertDialogDescription>
                                    </AlertDialogHeader>
                                    <div className="space-y-4">
