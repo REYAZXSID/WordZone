@@ -2,10 +2,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus } from 'lucide-react';
+import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus, ThumbsUp, MessageSquare, Youtube, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useSound } from '@/hooks/use-sound';
@@ -13,13 +14,14 @@ import { useUserData } from '@/hooks/use-user-data';
 import { saveUserData } from '@/lib/user-data';
 
 
-type CoinPack = {
-  id: string;
+type SocialReward = {
+  id: 'like' | 'comment' | 'subscribe';
   name: string;
+  description: string;
   amount: number;
-  price: string;
   icon: React.ReactNode;
-  isBestValue?: boolean;
+  url: string;
+  actionText: string;
 };
 
 type FreeCoinOption = {
@@ -31,27 +33,39 @@ type FreeCoinOption = {
     action: () => void;
 }
 
-const coinPacks: CoinPack[] = [
-  { id: 'pack_100', name: 'Handful of Coins', amount: 100, price: '$0.99', icon: <PiggyBank className="h-8 w-8 text-green-500" /> },
-  { id: 'pack_500', name: 'Bag of Coins', amount: 500, price: '$3.99', icon: <PiggyBank className="h-8 w-8 text-blue-500" />, isBestValue: true },
-  { id: 'pack_1000', name: 'Chest of Coins', amount: 1000, price: '$6.99', icon: <PiggyBank className="h-8 w-8 text-purple-500" /> },
+const socialRewards: SocialReward[] = [
+  { id: 'like', name: 'Like a Video', description: 'Show some love on our latest video.', amount: 100, icon: <ThumbsUp className="h-8 w-8 text-blue-500" />, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Go to Video' },
+  { id: 'comment', name: 'Comment on Video', description: 'Leave a comment on our latest video.', amount: 500, icon: <MessageSquare className="h-8 w-8 text-green-500" />, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Go to Video' },
+  { id: 'subscribe', name: 'Subscribe to Channel', description: 'Join our community for more content.', amount: 1000, icon: <Youtube className="h-8 w-8 text-red-500" />, url: 'https://www.youtube.com/@YouTube', actionText: 'Go to Channel' },
 ];
 
 export function CoinShopClientPage() {
   const { userData, isClient } = useUserData();
+  const [claimedSocial, setClaimedSocial] = useState<string[]>([]);
   const { toast } = useToast();
   const playSound = useSound();
 
-  const handlePurchase = (pack: CoinPack) => {
-    if (!userData) return;
+  useEffect(() => {
+    if (isClient) {
+        const savedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_social') || '[]');
+        setClaimedSocial(savedClaimed);
+    }
+  }, [isClient]);
 
-    const newCoinBalance = userData.coins + pack.amount;
+  const handleClaimSocial = (reward: SocialReward) => {
+    if (!userData || claimedSocial.includes(reward.id)) return;
+
+    const newCoinBalance = userData.coins + reward.amount;
     saveUserData({ coins: newCoinBalance });
-    playSound('coin');
+
+    const newClaimed = [...claimedSocial, reward.id];
+    setClaimedSocial(newClaimed);
+    localStorage.setItem('crypto_claimed_social', JSON.stringify(newClaimed));
     
+    playSound('coin');
     toast({
-      title: 'Purchase Successful!',
-      description: `You got ${pack.amount} coins. Your new balance is ${newCoinBalance}.`,
+      title: 'Reward Claimed!',
+      description: `You got ${reward.amount} coins. Your new balance is ${newCoinBalance}.`,
     });
   };
 
@@ -89,31 +103,35 @@ export function CoinShopClientPage() {
       </Card>
 
       <div>
-        <h2 className="text-2xl font-bold text-center mb-4">Buy Coins</h2>
+        <h2 className="text-2xl font-bold text-center mb-4">YouTube Rewards</h2>
         <div className="space-y-3">
-          {coinPacks.map((pack) => (
-            <Card key={pack.id} className={cn("transition-all relative", pack.isBestValue && "border-primary ring-2 ring-primary")}>
-               {pack.isBestValue && (
-                    <div className="absolute -top-3 right-4">
-                        <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1">
-                            <Sparkles className="h-4 w-4" /> Best Value
-                        </Badge>
+          {socialRewards.map((reward) => {
+            const isClaimed = claimedSocial.includes(reward.id);
+            return (
+                <Card key={reward.id} className="transition-all">
+                <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">{reward.icon}</div>
+                    <div>
+                        <p className="font-semibold">{reward.name}</p>
+                        <p className="text-lg font-bold text-primary">{reward.amount.toLocaleString()} Coins</p>
                     </div>
-               )}
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">{pack.icon}</div>
-                  <div>
-                    <p className="font-semibold">{pack.name}</p>
-                    <p className="text-lg font-bold text-primary">{pack.amount.toLocaleString()} Coins</p>
-                  </div>
-                </div>
-                <Button size="lg" onClick={() => handlePurchase(pack)}>
-                  {pack.price}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                         <Button asChild variant="outline" size="sm">
+                            <Link href={reward.url} target="_blank" rel="noopener noreferrer">
+                                {reward.actionText}
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                         </Button>
+                        <Button size="sm" onClick={() => handleClaimSocial(reward)} disabled={isClaimed}>
+                            {isClaimed ? 'Claimed' : 'Claim'}
+                        </Button>
+                    </div>
+                </CardContent>
+                </Card>
+            )
+          })}
         </div>
       </div>
       
