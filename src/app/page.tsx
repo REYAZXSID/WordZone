@@ -11,7 +11,7 @@ import { useUserData } from '@/hooks/use-user-data';
 
 export default function Home() {
   const { userData } = useUserData();
-  const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
+  const [avatar, setAvatar] = useState('https://files.catbox.moe/peii94.png');
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

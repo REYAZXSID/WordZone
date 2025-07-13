@@ -34,6 +34,8 @@ import { Flame, Star, Coins, CheckCircle2, BadgeCheck, Pen, Trash2, Gauge, Light
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useUserData } from '@/hooks/use-user-data';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const TIER_ICONS = {
   bronze: '🥉',
@@ -47,14 +49,19 @@ const TIER_COLORS = {
   gold: 'text-yellow-500',
 };
 
+const MALE_AVATAR = 'https://files.catbox.moe/peii94.png';
+const FEMALE_AVATAR = 'https://files.catbox.moe/cy43s8.png';
+
 export function ProfileClientPage() {
-    const { userData, isClient } = useUserData();
+    const { userData, isClient, refreshUserData } = useUserData();
     const [tempUsername, setTempUsername] = useState('');
+    const [selectedAvatar, setSelectedAvatar] = useState('');
     const { toast } = useToast();
 
     useEffect(() => {
         if (userData) {
             setTempUsername(userData.username);
+            setSelectedAvatar(userData.avatar);
         }
     }, [userData]);
 
@@ -63,8 +70,9 @@ export function ProfileClientPage() {
             toast({ variant: 'destructive', title: 'Invalid Username', description: 'Username must be at least 3 characters long.' });
             return;
         }
-        saveUserData({ username: tempUsername });
-        toast({ title: 'Profile Saved!', description: 'Your new username has been updated.' });
+        saveUserData({ username: tempUsername, avatar: selectedAvatar });
+        refreshUserData(); // Force a refresh of user data after saving
+        toast({ title: 'Profile Saved!', description: 'Your profile has been updated.' });
     };
 
     const handleResetProgress = () => {
@@ -105,26 +113,25 @@ export function ProfileClientPage() {
                         </div>
                     </div>
                     
-                    <h1 className="text-3xl font-bold">{userData.username}</h1>
-                    <p className="text-sm font-mono text-muted-foreground mt-1">
-                        UID: {userData.userId}
-                    </p>
-
-                    <div className="mt-4">
-                        <Dialog>
+                     <Dialog>
+                        <div className="flex items-center gap-2">
+                             <h1 className="text-3xl font-bold">{userData.username}</h1>
                             <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    <Pen className="mr-2 h-4 w-4" /> Edit Profile
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Pen className="h-4 w-4" />
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Edit Profile</DialogTitle>
-                                    <DialogDescription>
-                                        Change your username. Click save when you're done.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
+                        </div>
+                         <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Edit Profile</DialogTitle>
+                                <DialogDescription>
+                                    Change your username or avatar. Click save when you're done.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="username">Username</Label>
                                     <Input
                                         id="username"
                                         value={tempUsername}
@@ -132,14 +139,37 @@ export function ProfileClientPage() {
                                         className="col-span-3"
                                     />
                                 </div>
-                                <DialogFooter>
-                                    <DialogClose asChild>
-                                        <Button onClick={handleProfileSave}>Save changes</Button>
-                                    </DialogClose>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
+                                <div className="space-y-2">
+                                     <Label>Avatar</Label>
+                                      <RadioGroup defaultValue={selectedAvatar} onValueChange={setSelectedAvatar} className="flex gap-4">
+                                        <Label htmlFor="male-avatar" className="flex flex-col items-center gap-2 cursor-pointer rounded-md border-2 border-transparent p-2 aria-checked:border-primary">
+                                          <Image src={MALE_AVATAR} alt="Male Avatar" width={80} height={80} className="rounded-full" />
+                                          <div className="flex items-center gap-2">
+                                            <RadioGroupItem value={MALE_AVATAR} id="male-avatar" />
+                                            <span>Male</span>
+                                          </div>
+                                        </Label>
+                                        <Label htmlFor="female-avatar" className="flex flex-col items-center gap-2 cursor-pointer rounded-md border-2 border-transparent p-2 aria-checked:border-primary">
+                                           <Image src={FEMALE_AVATAR} alt="Female Avatar" width={80} height={80} className="rounded-full" />
+                                          <div className="flex items-center gap-2">
+                                            <RadioGroupItem value={FEMALE_AVATAR} id="female-avatar" />
+                                            <span>Female</span>
+                                          </div>
+                                        </Label>
+                                      </RadioGroup>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button onClick={handleProfileSave}>Save changes</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                    
+                    <p className="text-sm font-mono text-muted-foreground mt-1">
+                        UID: {userData.userId}
+                    </p>
                 </CardContent>
             </Card>
 

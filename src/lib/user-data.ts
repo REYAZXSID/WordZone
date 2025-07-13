@@ -39,7 +39,7 @@ export const getUserData = (): UserData => {
         return {
             userId: 'xxxxxxxx',
             username: 'Player',
-            avatar: 'https://placehold.co/112x112.png',
+            avatar: 'https://files.catbox.moe/peii94.png',
             coins: 0,
             stats: defaultStats,
             unlockedAchievements: [],
@@ -59,6 +59,9 @@ export const getUserData = (): UserData => {
         if (parsedData.stats.bestStreak === undefined) {
              parsedData.stats.bestStreak = parsedData.stats.dailyStreak;
         }
+         if (!parsedData.avatar) {
+            parsedData.avatar = 'https://files.catbox.moe/peii94.png';
+        }
         return parsedData;
     }
 
@@ -66,7 +69,7 @@ export const getUserData = (): UserData => {
     const defaultData: UserData = {
         userId: generateId(),
         username: 'Player123',
-        avatar: 'https://placehold.co/112x112.png',
+        avatar: 'https://files.catbox.moe/peii94.png',
         coins: 200,
         stats: defaultStats,
         unlockedAchievements: [],
@@ -83,6 +86,8 @@ export const saveUserData = (dataToSave: Partial<UserData>) => {
     const currentData = getUserData();
     const newData = { ...currentData, ...dataToSave };
     localStorage.setItem('crypto_user_data', JSON.stringify(newData));
+    // Manually trigger storage event for cross-tab sync
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data', newValue: JSON.stringify(newData) }));
 };
 
 // Update user stats
