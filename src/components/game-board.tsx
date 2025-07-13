@@ -85,49 +85,47 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
     setHistory([]);
     setSelectedLetter(null);
     setIsComplete(false);
-    setLives(3);
     setShowGameOverDialog(false);
+    setLives(3);
 
     if (isInitialLoad) {
       setStartTime(Date.now());
-    }
-    
-    const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
-    
-    let numberOfHints = 0;
-    if (!isDailyChallenge) {
-        switch(puzzle.difficulty) {
-            case 'easy':
-                numberOfHints = 5;
-                break;
-            case 'medium':
-                numberOfHints = 4;
-                break;
-            case 'hard':
-                numberOfHints = 3;
-                break;
-            case 'intermediate':
-                numberOfHints = 2;
-                break;
-            case 'advance':
-                numberOfHints = 1;
-                break;
-        }
-    }
-    
-    const newGuesses: Record<string, string> = {};
-    const hintsToApply = Math.min(numberOfHints, shuffledLetters.length);
-    
-    for(let i = 0; i < hintsToApply; i++) {
-      const encryptedLetter = shuffledLetters[i];
-      const decryptedLetter = solvedCipher[encryptedLetter];
-      if (decryptedLetter) {
-        newGuesses[encryptedLetter] = decryptedLetter;
+      const shuffledLetters = [...puzzleEncryptedLetters].sort(() => 0.5 - Math.random());
+      
+      let numberOfHints = 0;
+      if (!isDailyChallenge) {
+          switch(puzzle.difficulty) {
+              case 'easy':
+                  numberOfHints = 5;
+                  break;
+              case 'medium':
+                  numberOfHints = 4;
+                  break;
+              case 'hard':
+                  numberOfHints = 3;
+                  break;
+              case 'intermediate':
+                  numberOfHints = 2;
+                  break;
+              case 'advance':
+                  numberOfHints = 1;
+                  break;
+          }
       }
-    }
-    setUserGuesses(newGuesses);
-    setHistory([newGuesses]);
-    if (!isInitialLoad) {
+      
+      const newGuesses: Record<string, string> = {};
+      const hintsToApply = Math.min(numberOfHints, shuffledLetters.length);
+      
+      for(let i = 0; i < hintsToApply; i++) {
+        const encryptedLetter = shuffledLetters[i];
+        const decryptedLetter = solvedCipher[encryptedLetter];
+        if (decryptedLetter) {
+          newGuesses[encryptedLetter] = decryptedLetter;
+        }
+      }
+      setUserGuesses(newGuesses);
+      setHistory([newGuesses]);
+    } else {
         playSound('swoosh');
     }
   }, [puzzleEncryptedLetters, solvedCipher, isDailyChallenge, playSound, puzzle.difficulty]);
