@@ -233,7 +233,7 @@ export function CoinShopClientPage() {
   
   const freeCoinOptions: FreeCoinOption[] = [
       { id: 'starter_pack', name: 'Starter Pack', description: 'A one-time gift to get you going!', reward: 250, icon: <Sparkles className="h-8 w-8 text-purple-500" />, isOneTime: true },
-      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 25, icon: <Video className="h-8 w-8 text-rose-500" />, isAd: true, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Watch Video' },
+      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 25, icon: <Video className="h-8 w-8 text-rose-500" />, isAd: true, url: 'https://youtube.com/shorts/Tk_wy3Oe1lU?si=O7TwRKCnhPOCCgW2', actionText: 'Watch Video' },
       { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" /> },
       { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" />, isInvite: true }
   ]
