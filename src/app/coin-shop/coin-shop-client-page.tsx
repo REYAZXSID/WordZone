@@ -31,8 +31,10 @@ type FreeCoinOption = {
     description: string;
     reward: number;
     icon: React.ReactNode;
-    action?: () => void;
     isOneTime?: boolean;
+    isAd?: boolean;
+    url?: string;
+    actionText?: string;
 }
 
 const socialRewards: SocialReward[] = [
@@ -47,6 +49,7 @@ export function CoinShopClientPage() {
   const [visitedTasks, setVisitedTasks] = useState<string[]>([]);
   const [claimedOneTime, setClaimedOneTime] = useState<string[]>([]);
   const [dailyRewardTimeLeft, setDailyRewardTimeLeft] = useState('');
+  const [adRewardTimeLeft, setAdRewardTimeLeft] = useState('');
   const { toast } = useToast();
   const playSound = useSound();
 
@@ -65,15 +68,16 @@ export function CoinShopClientPage() {
     if (!isClient) return;
 
     const timer = setInterval(() => {
+        // Daily Reward Timer
         const lastClaimedStr = localStorage.getItem('crypto_daily_reward_claimed_at');
         if (lastClaimedStr) {
             const lastClaimed = parseInt(lastClaimedStr, 10);
             const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const cooldown = 24 * 60 * 60 * 1000;
             const timeSinceClaim = now - lastClaimed;
 
-            if (timeSinceClaim < twentyFourHours) {
-                const timeLeft = twentyFourHours - timeSinceClaim;
+            if (timeSinceClaim < cooldown) {
+                const timeLeft = cooldown - timeSinceClaim;
                 const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
@@ -82,6 +86,25 @@ export function CoinShopClientPage() {
                 setDailyRewardTimeLeft('');
             }
         }
+        
+        // Ad Reward Timer
+        const lastAdClaimedStr = localStorage.getItem('crypto_ad_reward_claimed_at');
+        if (lastAdClaimedStr) {
+            const lastClaimed = parseInt(lastAdClaimedStr, 10);
+            const now = Date.now();
+            const cooldown = 60 * 60 * 1000; // 1 hour
+            const timeSinceClaim = now - lastClaimed;
+
+            if (timeSinceClaim < cooldown) {
+                const timeLeft = cooldown - timeSinceClaim;
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                setAdRewardTimeLeft(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+            } else {
+                setAdRewardTimeLeft('');
+            }
+        }
+
     }, 1000);
 
     return () => clearInterval(timer);
@@ -124,6 +147,15 @@ export function CoinShopClientPage() {
           localStorage.setItem('crypto_daily_reward_claimed_at', Date.now().toString());
           setDailyRewardTimeLeft('23:59:59'); // Set initial timer display
       }
+      
+      if (option.id === 'watch_ad') {
+          if (adRewardTimeLeft) {
+              toast({ variant: 'destructive', title: 'Ad reward not ready!', description: `Please wait until the timer runs out.` });
+              return;
+          }
+          localStorage.setItem('crypto_ad_reward_claimed_at', Date.now().toString());
+          setAdRewardTimeLeft('59:59'); // Set initial timer display
+      }
 
       if (option.isOneTime && claimedOneTime.includes(option.id)) return;
       
@@ -141,15 +173,11 @@ export function CoinShopClientPage() {
           title: 'Coins Claimed!',
           description: `You received ${option.reward} free coins!`,
       });
-
-      if (option.action) {
-          option.action();
-      }
   }
   
   const freeCoinOptions: FreeCoinOption[] = [
       { id: 'starter_pack', name: 'Starter Pack', description: 'A one-time gift to get you going!', reward: 250, icon: <Sparkles className="h-8 w-8 text-purple-500" />, isOneTime: true },
-      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 10, icon: <Video className="h-8 w-8 text-rose-500" />, action: () => playSound('reward') },
+      { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 25, icon: <Video className="h-8 w-8 text-rose-500" />, isAd: true, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Watch Video' },
       { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" /> },
       { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" /> }
   ]
@@ -175,7 +203,19 @@ export function CoinShopClientPage() {
           {freeCoinOptions.map((option) => {
             const isOneTimeClaimed = option.isOneTime && claimedOneTime.includes(option.id);
             const isDailyRewardOnCooldown = option.id === 'daily_reward' && !!dailyRewardTimeLeft;
-            const isDisabled = isOneTimeClaimed || isDailyRewardOnCooldown;
+            const isAdRewardOnCooldown = option.id === 'watch_ad' && !!adRewardTimeLeft;
+            const hasVisitedAd = option.isAd && visitedTasks.includes(option.id);
+
+            const getButtonContent = () => {
+              if (isOneTimeClaimed) return "Claimed";
+              if (isDailyRewardOnCooldown) return dailyRewardTimeLeft;
+              if (isAdRewardOnCooldown) return adRewardTimeLeft;
+              if (option.isAd && !hasVisitedAd) return option.actionText;
+              return "Claim Now";
+            }
+            
+            const isDisabled = isOneTimeClaimed || isDailyRewardOnCooldown || isAdRewardOnCooldown;
+            const buttonContent = getButtonContent();
 
             return (
                  <Card key={option.id} className="flex flex-col justify-between transition-all hover:scale-[1.02] hover:shadow-lg">
@@ -192,14 +232,28 @@ export function CoinShopClientPage() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                        <Button 
+                       {option.isAd ? (
+                            hasVisitedAd ? (
+                                <Button className="w-full" onClick={() => handleFreeCoin(option)} disabled={isDisabled}>
+                                    {buttonContent}
+                                </Button>
+                            ) : (
+                                <Button asChild className="w-full" variant="outline" onClick={() => handleVisit(option.id)}>
+                                    <Link href={option.url!} target="_blank" rel="noopener noreferrer">
+                                        {option.actionText}
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            )
+                       ) : (
+                         <Button 
                             className="w-full"
                             onClick={() => handleFreeCoin(option)}
                             disabled={isDisabled}
-                        >
-                            {isOneTimeClaimed ? "Claimed" : 
-                            (isDailyRewardOnCooldown ? dailyRewardTimeLeft : "Claim Now")}
-                        </Button>
+                         >
+                            {buttonContent}
+                         </Button>
+                       )}
                     </CardFooter>
                  </Card>
             )
