@@ -39,9 +39,9 @@ type FreeCoinOption = {
 }
 
 const socialRewards: SocialReward[] = [
-  { id: 'like', name: 'Like a Video', description: 'Show some love on our latest video.', amount: 100, icon: <ThumbsUp className="h-8 w-8 text-blue-500" />, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Go to Video' },
-  { id: 'comment', name: 'Comment on Video', description: 'Leave a comment on our latest video.', amount: 500, icon: <MessageSquare className="h-8 w-8 text-green-500" />, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', actionText: 'Go to Video' },
-  { id: 'subscribe', name: 'Subscribe to Channel', description: 'Join our community for more content.', amount: 1000, icon: <Youtube className="h-8 w-8 text-red-500" />, url: 'https://www.youtube.com/@YouTube', actionText: 'Go to Channel' },
+  { id: 'like', name: 'Like a Video', description: 'Show some love on our latest video.', amount: 100, icon: <ThumbsUp className="h-8 w-8 text-blue-500" />, url: 'https://youtu.be/raZA2iVv2Ek?si=ZggokV1VqX-XdZ0D', actionText: 'Go to Video' },
+  { id: 'comment', name: 'Comment on Video', description: 'Leave a comment on our latest video.', amount: 500, icon: <MessageSquare className="h-8 w-8 text-green-500" />, url: 'https://youtu.be/Zmdp1t_u6Bw?si=QMilZOj_tThLqEgg', actionText: 'Go to Video' },
+  { id: 'subscribe', name: 'Subscribe to Channel', description: 'Join our community for more content.', amount: 1000, icon: <Youtube className="h-8 w-8 text-red-500" />, url: 'https://www.youtube.com/@shaitaanidastaan', actionText: 'Go to Channel' },
 ];
 
 export function CoinShopClientPage() {
