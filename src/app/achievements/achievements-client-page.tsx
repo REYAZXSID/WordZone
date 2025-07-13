@@ -91,8 +91,8 @@ export const initialAchievements: Achievement[] = [
     tier: 'bronze',
     reward: 30,
     icon: <Clock className="h-6 w-6 text-purple-500" />,
-    isUnlocked: (data) => data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime <= 60,
-    getProgress: (data) => ({ current: (data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime <= 60) ? 1 : 0, target: 1 }),
+    isUnlocked: (data) => data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime < 60,
+    getProgress: (data) => ({ current: (data.stats.fastestSolveTime !== null && data.stats.fastestSolveTime < 60) ? 1 : 0, target: 1 }),
   },
 ];
 
