@@ -9,6 +9,7 @@ import type { Puzzle, Difficulty } from '@/lib/puzzles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/use-sound';
+import { updateUserStat } from '@/lib/user-data';
 
 export function GameScreen() {
   const searchParams = useSearchParams();
@@ -37,6 +38,10 @@ export function GameScreen() {
       if (!completedLevels.includes(level)) {
         completedLevels.push(level);
         localStorage.setItem(key, JSON.stringify(completedLevels));
+        
+        // Update stats
+        updateUserStat('puzzlesSolved', 1);
+        updateUserStat('fastestSolveTime', Math.round(durationInSeconds));
         
         let reward = 0;
         if (puzzle?.difficulty === 'easy') reward = 15;

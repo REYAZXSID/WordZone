@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { resetUserData } from '@/lib/user-data';
 
 export function SettingsClientPage() {
   const [isClient, setIsClient] = useState(false);
@@ -63,11 +64,7 @@ export function SettingsClientPage() {
   };
   
   const handleResetProgress = () => {
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('crypto_') || key.startsWith('completedLevels_') || key.startsWith('dailyPuzzle')) {
-            localStorage.removeItem(key);
-        }
-    });
+    resetUserData();
     window.location.reload(); 
     toast({ title: "Progress Reset", description: "Your game data has been cleared." });
   }
@@ -230,7 +227,7 @@ export function SettingsClientPage() {
                 </Link>
             </Button>
 
-            <Button variant="ghost" className="w-full justify-start p-4 h-auto">
+            <Button variant="ghost" className="w-full justify-start p-4 h-auto" disabled>
                 <LogOut className="mr-3 h-5 w-5" /> 
                 <div className="text-left">
                     <div className="font-semibold">Log Out</div>

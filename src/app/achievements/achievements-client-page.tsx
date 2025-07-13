@@ -9,6 +9,7 @@ import { CheckCircle2, Medal, Puzzle, Star, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/use-sound';
+import { saveUserData, getUserData } from '@/lib/user-data';
 
 export type Achievement = {
   id: string;
@@ -95,14 +96,14 @@ export const initialAchievements: Achievement[] = [
 export function AchievementsClientPage() {
     const [isClient, setIsClient] = useState(false);
     const [achievements, setAchievements] = useState<Achievement[]>([]);
-    const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
     const { toast } = useToast();
     const playSound = useSound();
 
     useEffect(() => {
         setIsClient(true);
-        // Load unlocked achievements from localStorage
-        const savedUnlocked = JSON.parse(localStorage.getItem('crypto_unlocked_achievements') || '[]');
+        // Load user data to get unlocked achievements
+        const userData = getUserData();
+        const savedUnlocked = userData.unlockedAchievements;
         
         // Demo: Check for newly completed achievements and reward coins automatically
         const newlyUnlocked: string[] = [];
@@ -125,14 +126,13 @@ export function AchievementsClientPage() {
 
         if (newlyUnlocked.length > 0) {
             const allUnlocked = [...savedUnlocked, ...newlyUnlocked];
-            setUnlockedAchievements(allUnlocked);
-            localStorage.setItem('crypto_unlocked_achievements', JSON.stringify(allUnlocked));
-        } else {
-            setUnlockedAchievements(savedUnlocked);
+            saveUserData({ unlockedAchievements: allUnlocked });
         }
         
         setAchievements(initialAchievements);
     }, [toast, playSound]);
+    
+    const unlockedAchievements = isClient ? getUserData().unlockedAchievements : [];
 
     const renderAchievementCard = (achievement: Achievement) => {
         const isCompleted = achievement.currentProgress >= achievement.targetProgress;

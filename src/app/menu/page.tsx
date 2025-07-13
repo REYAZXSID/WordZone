@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +12,12 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
+   {
+    name: 'Profile',
+    description: 'View your stats and customize your profile.',
+    href: '/profile',
+    icon: <User className="h-8 w-8 text-cyan-500" />,
+  },
    {
     name: 'Daily Puzzle',
     description: 'Solve the puzzle of the day.',
