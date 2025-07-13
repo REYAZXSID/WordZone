@@ -22,8 +22,8 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
   const backLink = pathname.includes('/game/[difficulty]') ? '/game/category' : pathname.startsWith('/game') ? '/game/category' : '/';
 
   return (
-    <header className="sticky top-0 z-10 grid h-16 w-full grid-cols-3 items-center border-b bg-background/80 px-4 backdrop-blur-sm">
-      <div className="flex justify-start">
+    <header className="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm">
+      <div className="flex items-center gap-2">
          <Button asChild variant="ghost" size="icon" className="h-10 w-10">
           <Link href={backLink}>
             <ChevronLeft className="h-6 w-6" />
@@ -32,8 +32,8 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
         </Button>
       </div>
 
-      <div className="flex justify-center">
-        <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
+      <div className="flex-1 text-center">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             {title}
         </h1>
       </div>
