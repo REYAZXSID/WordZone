@@ -56,9 +56,9 @@ export function CoinShopClientPage() {
   const { toast } = useToast();
   const playSound = useSound();
 
-  const INVITE_URL = 'https://example.com/cipher-iq.apk';
+  const INVITE_URL = 'https://example.com/wordzone.apk';
   const ICON_URL = 'https://files.catbox.moe/romunz.png';
-  const SHARE_MESSAGE = "Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard.";
+  const SHARE_MESSAGE = "Sharpen your mind with WordZone! Decode quotes, unlock achievements, and climb the leaderboard.";
 
   useEffect(() => {
     if (isClient) {
@@ -200,7 +200,7 @@ export function CoinShopClientPage() {
 
   const handleInvite = async () => {
     const shareData = {
-        title: 'Cipher IQ',
+        title: 'WordZone',
         text: `${SHARE_MESSAGE} Download at: ${INVITE_URL}`,
         url: INVITE_URL,
     };
