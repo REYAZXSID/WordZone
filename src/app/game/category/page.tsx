@@ -55,7 +55,7 @@ const categories: Category[] = [
 export default function CategorySelectionPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PageHeader title="Select Difficulty" />
+      <PageHeader title="Categories" />
       <main className="flex-1 p-4 sm:p-6">
         <div className="mx-auto max-w-2xl">
           <div className="space-y-4">
