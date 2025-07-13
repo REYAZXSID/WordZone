@@ -40,7 +40,7 @@ export const initialPuzzlePacks: PuzzlePack[] = [
     description: 'A collection of romantic and heartfelt sayings.',
     icon: <Quote className="h-6 w-6 text-pink-500" />,
     totalPuzzles: 15,
-    completedPuzzles: 15,
+    completedPuzzles: 7,
     difficulty: 'Easy',
     isLocked: false,
   },
