@@ -433,7 +433,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
               </AlertDialogHeader>
               <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
                   <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" onClick={() => { if(onPlayAgain) { resetGame(); onPlayAgain(); } }}>
+                      <Button variant="outline" onClick={() => { if(onPlayAgain) { resetGame(true); onPlayAgain(); } }}>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Play Again
                       </Button>
@@ -469,7 +469,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                     </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col gap-2 w-full mt-4">
-                    <Button variant="outline" onClick={() => { resetGame(); playSound('swoosh'); }}>
+                    <Button variant="outline" onClick={() => { resetGame(true); playSound('swoosh'); }}>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Play Again
                     </Button>
