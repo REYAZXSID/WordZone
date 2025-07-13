@@ -46,6 +46,7 @@ export function CoinShopClientPage() {
   const [claimedSocial, setClaimedSocial] = useState<string[]>([]);
   const [visitedTasks, setVisitedTasks] = useState<string[]>([]);
   const [claimedOneTime, setClaimedOneTime] = useState<string[]>([]);
+  const [dailyRewardTimeLeft, setDailyRewardTimeLeft] = useState('');
   const { toast } = useToast();
   const playSound = useSound();
 
@@ -58,6 +59,32 @@ export function CoinShopClientPage() {
         const savedClaimedOneTime = JSON.parse(localStorage.getItem('crypto_claimed_one_time') || '[]');
         setClaimedOneTime(savedClaimedOneTime);
     }
+  }, [isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const timer = setInterval(() => {
+        const lastClaimedStr = localStorage.getItem('crypto_daily_reward_claimed_at');
+        if (lastClaimedStr) {
+            const lastClaimed = parseInt(lastClaimedStr, 10);
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const timeSinceClaim = now - lastClaimed;
+
+            if (timeSinceClaim < twentyFourHours) {
+                const timeLeft = twentyFourHours - timeSinceClaim;
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                setDailyRewardTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+            } else {
+                setDailyRewardTimeLeft('');
+            }
+        }
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, [isClient]);
   
   const handleVisit = (rewardId: string) => {
@@ -88,6 +115,16 @@ export function CoinShopClientPage() {
 
   const handleFreeCoin = (option: FreeCoinOption) => {
       if (!userData) return;
+      
+      if (option.id === 'daily_reward') {
+          if (dailyRewardTimeLeft) {
+              toast({ variant: 'destructive', title: 'Daily reward not ready!', description: `Please wait until the timer runs out.` });
+              return;
+          }
+          localStorage.setItem('crypto_daily_reward_claimed_at', Date.now().toString());
+          setDailyRewardTimeLeft('23:59:59'); // Set initial timer display
+      }
+
       if (option.isOneTime && claimedOneTime.includes(option.id)) return;
       
       const newCoinBalance = userData.coins + option.reward;
@@ -136,7 +173,10 @@ export function CoinShopClientPage() {
         <p className="text-muted-foreground text-center mb-6">Complete simple tasks to earn more coins.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {freeCoinOptions.map((option) => {
-            const isClaimed = option.isOneTime && claimedOneTime.includes(option.id);
+            const isOneTimeClaimed = option.isOneTime && claimedOneTime.includes(option.id);
+            const isDailyRewardOnCooldown = option.id === 'daily_reward' && !!dailyRewardTimeLeft;
+            const isDisabled = isOneTimeClaimed || isDailyRewardOnCooldown;
+
             return (
                  <Card key={option.id} className="flex flex-col justify-between transition-all hover:scale-[1.02] hover:shadow-lg">
                     <CardHeader className="flex-row items-start gap-4 space-y-0 pb-4">
@@ -155,9 +195,10 @@ export function CoinShopClientPage() {
                         <Button 
                             className="w-full"
                             onClick={() => handleFreeCoin(option)}
-                            disabled={isClaimed}
+                            disabled={isDisabled}
                         >
-                            {isClaimed ? "Claimed" : "Claim Now"}
+                            {isOneTimeClaimed ? "Claimed" : 
+                            (isDailyRewardOnCooldown ? dailyRewardTimeLeft : "Claim Now")}
                         </Button>
                     </CardFooter>
                  </Card>
