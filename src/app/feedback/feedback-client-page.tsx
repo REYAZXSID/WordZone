@@ -13,8 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Star, MessageSquare, Bug, ImageIcon, Send } from 'lucide-react';
+import { Star, MessageSquare, Bug, ImageIcon, Send, Instagram, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 
 const feedbackSchema = z.object({
@@ -62,7 +63,7 @@ export function FeedbackClientPage() {
   }
   
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6">
         <Tabs defaultValue="feedback">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="feedback"><MessageSquare className="mr-2 h-4 w-4" />General Feedback</TabsTrigger>
@@ -207,6 +208,24 @@ export function FeedbackClientPage() {
                 </Card>
             </TabsContent>
         </Tabs>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Contact Developer</CardTitle>
+                <CardDescription>
+                    Have a feature request or want to connect? Reach out on Instagram!
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Button asChild className="w-full">
+                    <Link href="https://www.instagram.com/siddhant_hue" target="_blank" rel="noopener noreferrer">
+                        <Instagram className="mr-2 h-5 w-5" />
+                        @siddhant_hue
+                        <ArrowRight className="ml-auto h-5 w-5" />
+                    </Link>
+                 </Button>
+            </CardContent>
+        </Card>
     </div>
   );
 }
