@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Flame, Star, Coins, CheckCircle2 } from 'lucide-react';
@@ -34,8 +34,7 @@ export function StreaksClientPage() {
     const { toast } = useToast();
     const playSound = useSound();
 
-    useEffect(() => {
-        setIsClient(true);
+    const loadData = useCallback(() => {
         if (typeof window !== 'undefined') {
             const userData = getUserData();
             
@@ -50,6 +49,23 @@ export function StreaksClientPage() {
             setClaimedMilestones(storedClaimed);
         }
     }, []);
+
+    useEffect(() => {
+        setIsClient(true);
+        loadData();
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'crypto_user_data' || e.key === 'crypto_completed_dates' || e.key === 'crypto_claimed_streaks') {
+                loadData();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [loadData]);
 
     const handleClaimMilestone = (milestone: StreakMilestone) => {
         if (currentStreak < milestone.days || claimedMilestones.includes(milestone.days)) return;

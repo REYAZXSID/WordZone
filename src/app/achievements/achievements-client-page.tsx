@@ -142,7 +142,7 @@ export function AchievementsClientPage() {
             localStorage.setItem('crypto_coins', newCoinBalance.toString());
             setUserData(getUserData()); // Refresh state
         }
-    }, [isClient, toast, playSound]);
+    }, [isClient, toast, playSound, userData.stats]); // Depend on stats to re-check on change
     
     const achievementsWithProgress = initialAchievements.map(ach => {
         const { current, target } = ach.getProgress(userData);

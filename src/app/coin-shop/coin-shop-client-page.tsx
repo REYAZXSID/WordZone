@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -41,8 +41,7 @@ export function CoinShopClientPage() {
   const { toast } = useToast();
   const playSound = useSound();
 
-  useEffect(() => {
-    setIsClient(true);
+  const updateCoinBalance = useCallback(() => {
     const savedCoins = localStorage.getItem('crypto_coins');
     if (savedCoins) {
       setCoins(parseInt(savedCoins, 10));
@@ -51,6 +50,21 @@ export function CoinShopClientPage() {
         setCoins(200);
     }
   }, []);
+
+  useEffect(() => {
+    setIsClient(true);
+    updateCoinBalance();
+
+    const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'crypto_coins') {
+            updateCoinBalance();
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [updateCoinBalance]);
 
   const handlePurchase = (pack: CoinPack) => {
     const newCoinBalance = coins + pack.amount;
