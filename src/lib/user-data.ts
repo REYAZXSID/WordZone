@@ -53,9 +53,14 @@ export const getUserData = (): UserData => {
         if (!parsedData.stats) {
             parsedData.stats = defaultStats;
         }
+         // Deep merge stats to ensure new properties are added
+        parsedData.stats = { ...defaultStats, ...parsedData.stats };
         if (!parsedData.stats.puzzlesSolvedByDifficulty) {
             parsedData.stats.puzzlesSolvedByDifficulty = defaultStats.puzzlesSolvedByDifficulty;
+        } else {
+             parsedData.stats.puzzlesSolvedByDifficulty = { ...defaultStats.puzzlesSolvedByDifficulty, ...parsedData.stats.puzzlesSolvedByDifficulty };
         }
+
         if (parsedData.stats.bestStreak === undefined) {
              parsedData.stats.bestStreak = parsedData.stats.dailyStreak;
         }
@@ -75,7 +80,6 @@ export const getUserData = (): UserData => {
         unlockedAchievements: [],
     };
     localStorage.setItem('crypto_user_data', JSON.stringify(defaultData));
-    localStorage.setItem('crypto_coins', '200'); // Sync coins
     return defaultData;
 };
 
@@ -101,17 +105,22 @@ export const updateUserStat = (stat: keyof UserData['stats'], value: number, dif
         if (newStats.fastestSolveTime === null || value < newStats.fastestSolveTime) {
             newStats.fastestSolveTime = value;
         }
-    } else if (stat === 'puzzlesSolved' && difficulty) {
+    } else if (stat === 'puzzlesSolved') {
         newStats.puzzlesSolved += value;
-        newStats.puzzlesSolvedByDifficulty[difficulty] = (newStats.puzzlesSolvedByDifficulty[difficulty] || 0) + value;
+        if (difficulty) {
+             newStats.puzzlesSolvedByDifficulty[difficulty] = (newStats.puzzlesSolvedByDifficulty[difficulty] || 0) + value;
+        }
     } else if (stat === 'dailyStreak') {
         newStats.dailyStreak = value;
         if (newStats.dailyStreak > newStats.bestStreak) {
             newStats.bestStreak = newStats.dailyStreak;
         }
-    }
-    else {
-        (newStats[stat as 'hintsUsed'] as number) += value;
+    } else if (stat === 'bestStreak') {
+        if (value > newStats.bestStreak) {
+            newStats.bestStreak = value;
+        }
+    } else if (stat === 'hintsUsed') {
+        newStats.hintsUsed += value;
     }
     
     saveUserData({ stats: newStats });
@@ -121,8 +130,10 @@ export const updateUserStat = (stat: keyof UserData['stats'], value: number, dif
 export const resetUserData = () => {
      if (typeof window === 'undefined') return;
      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('crypto_') || key.startsWith('completedLevels_') || key.startsWith('dailyPuzzle')) {
+        if (key.startsWith('crypto_') || key.startsWith('completedLevels_')) {
             localStorage.removeItem(key);
         }
     });
+    // Dispatch event to notify other tabs/components of the reset
+    window.dispatchEvent(new StorageEvent('storage', { key: 'crypto_user_data' }));
 }
