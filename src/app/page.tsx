@@ -98,11 +98,11 @@ export default function Home() {
                 className="mt-6 flex items-center justify-center gap-4 group"
             >
                 <Image 
-                    src="https://files.catbox.moe/ljdyx0.png"
+                    src="https://files.catbox.moe/uynvr6.png"
                     data-ai-hint="portrait man"
                     alt="Sid"
                     width={40}
-                    height={30}
+                    height={40}
                     className="rounded-full border-2 border-primary/50 transition-transform duration-300 group-hover:scale-110"
                 />
                 <span className="font-semibold text-foreground/80 transition-colors duration-300 group-hover:text-primary">
