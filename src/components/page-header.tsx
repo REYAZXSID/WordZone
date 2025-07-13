@@ -22,22 +22,25 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
   const backLink = pathname.includes('/game/[difficulty]') ? '/game/category' : pathname.startsWith('/game') ? '/game/category' : '/';
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 w-full items-center border-b bg-background/80 px-4 backdrop-blur-sm">
-      <div className="flex w-1/3 justify-start items-center gap-4">
+    <header className="sticky top-0 z-10 grid h-16 w-full grid-cols-3 items-center border-b bg-background/80 px-4 backdrop-blur-sm">
+      <div className="flex justify-start">
          <Button asChild variant="ghost" size="icon" className="h-10 w-10">
           <Link href={backLink}>
             <ChevronLeft className="h-6 w-6" />
             <span className="sr-only">Back</span>
           </Link>
         </Button>
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl truncate">
+      </div>
+
+      <div className="flex justify-center">
+        <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
             {title}
         </h1>
       </div>
 
-      <div className="flex w-1/3 items-center justify-center gap-4">
+      <div className="flex items-center justify-end gap-2">
         {lives !== undefined && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 rounded-full border bg-card p-1.5 px-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <Heart
                 key={i}
@@ -49,15 +52,12 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
             ))}
           </div>
         )}
-      </div>
-
-      <div className="flex w-1/3 items-center justify-end gap-2">
         {coins !== undefined && (
              isClient ? (
                 <Card>
                     <CardContent className="flex items-center gap-2 p-2">
                         <Coins className="h-5 w-5 text-yellow-500" />
-                        <span className="font-bold text-lg">{coins}</span>
+                        <span className="font-bold">{coins}</span>
                     </CardContent>
                 </Card>
             ) : (
