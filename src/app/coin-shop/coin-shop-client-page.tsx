@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Coins, PiggyBank, Sparkles, Gift, Video, UserPlus, ThumbsUp, MessageSquare, Youtube, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSound } from '@/hooks/use-sound';
 import { useUserData } from '@/hooks/use-user-data';
 import { saveUserData } from '@/lib/user-data';
+import { Separator } from '@/components/ui/separator';
 
 
 type SocialReward = {
@@ -30,7 +31,8 @@ type FreeCoinOption = {
     description: string;
     reward: number;
     icon: React.ReactNode;
-    action: () => void;
+    action?: () => void;
+    isOneTime?: boolean;
 }
 
 const socialRewards: SocialReward[] = [
@@ -43,15 +45,18 @@ export function CoinShopClientPage() {
   const { userData, isClient } = useUserData();
   const [claimedSocial, setClaimedSocial] = useState<string[]>([]);
   const [visitedTasks, setVisitedTasks] = useState<string[]>([]);
+  const [claimedOneTime, setClaimedOneTime] = useState<string[]>([]);
   const { toast } = useToast();
   const playSound = useSound();
 
   useEffect(() => {
     if (isClient) {
-        const savedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_social') || '[]');
-        setClaimedSocial(savedClaimed);
+        const savedClaimedSocial = JSON.parse(localStorage.getItem('crypto_claimed_social') || '[]');
+        setClaimedSocial(savedClaimedSocial);
         const savedVisited = JSON.parse(localStorage.getItem('crypto_visited_tasks') || '[]');
         setVisitedTasks(savedVisited);
+        const savedClaimedOneTime = JSON.parse(localStorage.getItem('crypto_claimed_one_time') || '[]');
+        setClaimedOneTime(savedClaimedOneTime);
     }
   }, [isClient]);
   
@@ -83,27 +88,39 @@ export function CoinShopClientPage() {
 
   const handleFreeCoin = (option: FreeCoinOption) => {
       if (!userData) return;
+      if (option.isOneTime && claimedOneTime.includes(option.id)) return;
       
       const newCoinBalance = userData.coins + option.reward;
       saveUserData({ coins: newCoinBalance });
+
+      if (option.isOneTime) {
+          const newClaimed = [...claimedOneTime, option.id];
+          setClaimedOneTime(newClaimed);
+          localStorage.setItem('crypto_claimed_one_time', JSON.stringify(newClaimed));
+      }
+
       playSound('coin');
       toast({
           title: 'Coins Claimed!',
           description: `You received ${option.reward} free coins!`,
       });
-      option.action();
+
+      if (option.action) {
+          option.action();
+      }
   }
   
   const freeCoinOptions: FreeCoinOption[] = [
+      { id: 'starter_pack', name: 'Starter Pack', description: 'A one-time gift to get you going!', reward: 250, icon: <Sparkles className="h-8 w-8 text-purple-500" />, isOneTime: true },
       { id: 'watch_ad', name: 'Watch an Ad', description: 'Get a quick coin boost.', reward: 10, icon: <Video className="h-8 w-8 text-rose-500" />, action: () => playSound('reward') },
-      { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" />, action: () => {} },
-      { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" />, action: () => {} }
+      { id: 'daily_reward', name: 'Daily Reward', description: 'Claim your free coins for today.', reward: 20, icon: <Gift className="h-8 w-8 text-teal-500" /> },
+      { id: 'referral', name: 'Invite a Friend', description: 'Earn a bonus when they join.', reward: 100, icon: <UserPlus className="h-8 w-8 text-cyan-500" /> }
   ]
 
   if (!isClient || !userData) return null;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8">
       <Card className="shadow-lg sticky top-16 z-10 bg-background/90 backdrop-blur-sm">
         <CardContent className="flex items-center justify-between p-4">
           <div className="text-sm text-muted-foreground font-semibold">Your Balance</div>
@@ -113,67 +130,85 @@ export function CoinShopClientPage() {
           </div>
         </CardContent>
       </Card>
+      
+       <div>
+        <h2 className="text-2xl font-bold text-center mb-1">Get Free Coins</h2>
+        <p className="text-muted-foreground text-center mb-6">Complete simple tasks to earn more coins.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {freeCoinOptions.map((option) => {
+            const isClaimed = option.isOneTime && claimedOneTime.includes(option.id);
+            return (
+                 <Card key={option.id} className="flex flex-col justify-between transition-all hover:scale-[1.02] hover:shadow-lg">
+                    <CardHeader className="flex-row items-start gap-4 space-y-0 pb-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted shrink-0">{option.icon}</div>
+                        <div>
+                            <CardTitle>{option.name}</CardTitle>
+                            <CardDescription className="text-xs pt-1">{option.description}</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="grow flex items-center justify-center">
+                         <p className="text-4xl font-bold text-yellow-500 flex items-center gap-2">
+                            <Coins className="h-8 w-8"/> +{option.reward}
+                        </p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button 
+                            className="w-full"
+                            onClick={() => handleFreeCoin(option)}
+                            disabled={isClaimed}
+                        >
+                            {isClaimed ? "Claimed" : "Claim Now"}
+                        </Button>
+                    </CardFooter>
+                 </Card>
+            )
+          })}
+        </div>
+      </div>
+      
+      <Separator />
 
       <div>
-        <h2 className="text-2xl font-bold text-center mb-4">YouTube Rewards</h2>
-        <div className="space-y-3">
+        <h2 className="text-2xl font-bold text-center mb-1">YouTube Rewards</h2>
+        <p className="text-muted-foreground text-center mb-6">Support our channel and get rewarded!</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {socialRewards.map((reward) => {
             const isClaimed = claimedSocial.includes(reward.id);
             const hasVisited = visitedTasks.includes(reward.id);
 
             return (
-                <Card key={reward.id} className="transition-all">
-                <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">{reward.icon}</div>
-                    <div>
-                        <p className="font-semibold">{reward.name}</p>
-                        <p className="text-lg font-bold text-primary">{reward.amount.toLocaleString()} Coins</p>
-                    </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {isClaimed ? (
-                            <Button size="sm" disabled>Claimed</Button>
+                <Card key={reward.id} className="flex flex-col justify-between transition-all">
+                    <CardHeader className="flex-row items-start gap-4 space-y-0 pb-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted shrink-0">{reward.icon}</div>
+                        <div>
+                            <CardTitle>{reward.name}</CardTitle>
+                            <CardDescription className="text-xs pt-1">{reward.description}</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="grow flex items-center justify-center">
+                         <p className="text-4xl font-bold text-yellow-500 flex items-center gap-2">
+                            <Coins className="h-8 w-8"/> +{reward.amount}
+                        </p>
+                    </CardContent>
+                    <CardFooter>
+                         {isClaimed ? (
+                            <Button className="w-full" disabled>Claimed</Button>
                         ) : hasVisited ? (
-                            <Button size="sm" onClick={() => handleClaimSocial(reward)}>
-                                Claim
+                            <Button className="w-full" onClick={() => handleClaimSocial(reward)}>
+                                Claim Reward
                             </Button>
                         ) : (
-                             <Button asChild size="sm" variant="outline" onClick={() => handleVisit(reward.id)}>
+                             <Button asChild className="w-full" variant="outline" onClick={() => handleVisit(reward.id)}>
                                 <Link href={reward.url} target="_blank" rel="noopener noreferrer">
                                     {reward.actionText}
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                              </Button>
                         )}
-                    </div>
-                </CardContent>
+                    </CardFooter>
                 </Card>
             )
           })}
-        </div>
-      </div>
-      
-       <div>
-        <h2 className="text-2xl font-bold text-center mb-4">Get Free Coins</h2>
-        <div className="space-y-3">
-          {freeCoinOptions.map((option) => (
-            <Card key={option.id} className="transition-all hover:scale-[1.02] hover:shadow-lg">
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">{option.icon}</div>
-                  <div>
-                    <p className="font-semibold">{option.name}</p>
-                    <p className="text-sm text-muted-foreground">{option.description}</p>
-                  </div>
-                </div>
-                 <Button variant="outline" onClick={() => handleFreeCoin(option)}>
-                    Claim +{option.reward}
-                    <Coins className="ml-2 h-4 w-4 text-yellow-500" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
         </div>
       </div>
 
