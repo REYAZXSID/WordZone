@@ -66,18 +66,22 @@ export const useSound = () => {
 
   const playSound = useCallback((sound: SoundType) => {
     if (soundEnabled) {
-      // For this prototype, we can't add actual audio files.
-      // We will log to the console instead.
       // To make this work, create a /public/sounds folder and add the audio files.
-      console.log(`[SOUND] Playing: ${soundMap[sound]}`);
-
-      // const audio = audioCache[sound];
-      // if (audio) {
-      //   audio.currentTime = 0;
-      //   audio.play().catch(error => {
-      //       console.error(`Could not play sound ${sound}:`, error);
-      //   });
-      // }
+      const audio = audioCache[sound];
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(error => {
+            // This can happen if the user hasn't interacted with the page yet.
+            // It's a browser security feature.
+            console.error(`Could not play sound "${sound}":`, error);
+        });
+      } else {
+         console.warn(`Sound "${sound}" not found in cache. It might not be preloaded.`);
+         const newAudio = new Audio(soundMap[sound]);
+         newAudio.play().catch(error => {
+            console.error(`Could not play sound "${sound}":`, error);
+        });
+      }
     }
   }, [soundEnabled]);
 
