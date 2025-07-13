@@ -38,7 +38,7 @@ const encrypt = (text: string, cipher: Record<string, string>): string => {
 };
 
 const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
-    // Easy (<= 19 letters)
+    // Easy (1-19 letters)
     { quote: "GO TO HELL", author: "UNKNOWN" },
     { quote: "BE YOURSELF", author: "OSCAR WILDE" },
     { quote: "I AM LEGEND", author: "RICHARD MATHESON"},
@@ -56,39 +56,42 @@ const puzzleData: Omit<Puzzle, 'text' | 'cipher' | 'id' | 'difficulty'>[] = [
     { quote: "CARPE DIEM", author: "HORACE"},
     { quote: "FOLLOW YOUR HEART", author: "UNKNOWN"},
     { quote: "KEEP IT SIMPLE", author: "KELLY JOHNSON"},
+    { quote: "STAY STRONG", author: "DEMI LOVATO"},
+    { quote: "DO IT NOW", author: "UNKNOWN"},
+    { quote: "NO PAIN NO GAIN", author: "PROVERB"},
 
-    // Medium (20-29 letters)
+    // Medium (20-25 letters)
     { quote: "KNOWLEDGE IS POWER", author: "FRANCIS BACON" },
     { quote: "SIMPLICITY IS THE KEY", author: "BRUCE LEE"},
     { quote: "LEARNING NEVER ENDS", author: "UNKNOWN" },
-    { quote: "STAY HUNGRY STAY FOOLISH", author: "STEVE JOBS" },
-    { quote: "LOVE FOR ALL HATRED FOR NONE", author: "KHALIFATUL MASIH III" },
-    { quote: "HAVE NO FEAR OF PERFECTION", author: "SALVADOR DALI"},
     { quote: "THE FUTURE IS NOW", author: "UNKNOWN"},
     { quote: "STRIVE FOR GREATNESS", author: "LEBRON JAMES"},
     { quote: "NEVER LOOK BACK", author: "PROVERB"},
-    { quote: "EVERY MOMENT IS A FRESH BEGINNING", author: "T.S. ELIOT"},
-
-    // Hard (30-39 letters)
+    { quote: "TURN WOUNDS INTO WISDOM", author: "OPRAH WINFREY" },
+    { quote: "CHASE THE VISION", author: "TONY HSIEH" },
+    { quote: "LOVE CONQUERS ALL", author: "VIRGIL" },
+    { quote: "THE BEST IS YET TO COME", author: "FRANK SINATRA" },
+    
+    // Hard (30-35 letters)
     { quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", author: "PANGRAM" },
+    { quote: "HAVE NO FEAR OF PERFECTION", author: "SALVADOR DALI"},
+    { quote: "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY", author: "ALBERT EINSTEIN"},
+    { quote: "THE BEST WAY TO PREDICT THE FUTURE IS TO INVENT IT", author: "ALAN KAY"},
+    { quote: "LIFE IS WHAT HAPPENS WHEN YOU'RE BUSY MAKING OTHER PLANS", author: "JOHN LENNON" },
+
+    // Intermediate (35-40 letters)
+    { quote: "EVERY MOMENT IS A FRESH BEGINNING", author: "T.S. ELIOT"},
     { quote: "THE ONLY THING WE HAVE TO FEAR IS FEAR ITSELF", author: "FRANKLIN D ROOSEVELT" },
     { quote: "ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU", author: "JOHN F KENNEDY"},
-    { quote: "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY", author: "ALBERT EINSTEIN"},
     { quote: "A JOURNEY OF A THOUSAND MILES BEGINS WITH A SINGLE STEP", author: "LAO TZU"},
-    { quote: "THE BEST WAY TO PREDICT THE FUTURE IS TO INVENT IT", author: "ALAN KAY"},
-    
-    // Intermediate (40-49 letters)
-    { quote: "THAT'S ONE SMALL STEP FOR A MAN ONE GIANT LEAP FOR MANKIND", author: "NEIL ARMSTRONG" },
-    { quote: "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO", author: "STEVE JOBS"},
-    { quote: "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS", author: "WINSTON CHURCHILL"},
     { quote: "THE PURPOSE OF OUR LIVES IS TO BE HAPPY", author: "DALAI LAMA"},
 
-    // Advance (50+)
-    { quote: "TWO ROADS DIVERGED IN A WOOD AND I TOOK THE ONE LESS TRAVELED BY", author: "ROBERT FROST" },
-    { quote: "THE GREATEST GLORY IN LIVING LIES NOT IN NEVER FALLING BUT IN RISING EVERY TIME WE FALL", author: "NELSON MANDELA"},
+    // Advance (40-45 letters)
+    { quote: "STAY HUNGRY STAY FOOLISH", author: "STEVE JOBS" },
+    { quote: "LOVE FOR ALL HATRED FOR NONE", author: "KHALIFATUL MASIH III" },
+    { quote: "THAT'S ONE SMALL STEP FOR A MAN ONE GIANT LEAP FOR MANKIND", author: "NEIL ARMSTRONG" },
+    { quote: "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO", author: "STEVE JOBS"},
     { quote: "WHETHER YOU THINK YOU CAN OR YOU THINK YOU CAN'T YOU'RE RIGHT", author: "HENRY FORD" },
-    { quote: "YOU MISS ONE HUNDRED PERCENT OF THE SHOTS YOU DON'T TAKE", author: "WAYNE GRETZKY"},
-    { quote: "TO BE YOURSELF IN A WORLD THAT IS CONSTANTLY TRYING TO MAKE YOU SOMETHING ELSE IS THE GREATEST ACCOMPLISHMENT", author: "RALPH WALDO EMERSON"},
 ];
 
 
@@ -103,16 +106,20 @@ const puzzleKeys = [
     "BCDEFGHIJKLMNOPQRSTUVWXYZA", "DEFGHIJKLMNOPQRSTUVWXYZABC",
     "VFRSWCXDEQAZBGTYHNMJUIKLOP", "HGFDSAPOIUYTREWQMNBVCXZLKJ",
     "OKMIJNUHBYGVTFCRDXESZWAQPL", "BVCXZLKJHGFDSAPOIUYTREWQMN",
-    "CRFVTGBYHNUJMIKOLPWSXEDQAZ", "TREWQPOIUYASDFGHJKLMNBVCXZ"
-]
+    "CRFVTGBYHNUJMIKOLPWSXEDQAZ", "TREWQPOIUYASDFGHJKLMNBVCXZ",
+    "FGHJKLQWERTYUIOPZXCVBNMADS", "TREWQLKJHGFDSAMNBVCXZOPIUY",
+    "VCXZASDFGHJKLPOIUYTREWQMNB", "EDCRFVTGBYHNUJMIKOLPWSXQAZ",
+    "HGFDSAPOIUYTREWQMNBVCXZLKJ", "TGBYHNUJMIKOLPWSXEDCRFVQAZ",
+    "SWCXDEQAZBGTYHNMJUIKLOPVFR", "UJMNCDEQAZBGTYHIKOLPVFRSWX"
+];
 
 const getDifficulty = (quote: string): Difficulty => {
     const length = quote.replace(/[^A-Z]/g, '').length;
-    if (length < 20) return 'easy';
-    if (length >= 20 && length <= 29) return 'medium';
-    if (length >= 30 && length <= 39) return 'hard';
-    if (length >= 40 && length <= 49) return 'intermediate';
-    return 'advance';
+    if (length <= 19) return 'easy';
+    if (length >= 20 && length <= 25) return 'medium';
+    if (length >= 30 && length <= 35) return 'hard';
+    if (length >= 35 && length <= 40) return 'intermediate';
+    return 'advance'; // 40-45+
 }
 
 export const puzzles: Puzzle[] = puzzleData.map((p, index) => {
@@ -135,15 +142,15 @@ const advancePuzzles = puzzles.filter(p => p.difficulty === 'advance');
 const getPuzzlePool = (difficulty: Difficulty): Puzzle[] => {
     switch (difficulty) {
         case 'easy':
-            return easyPuzzles.length > 0 ? easyPuzzles : puzzles;
+            return easyPuzzles;
         case 'medium':
-            return mediumPuzzles.length > 0 ? mediumPuzzles : puzzles;
+            return mediumPuzzles;
         case 'hard':
-            return hardPuzzles.length > 0 ? hardPuzzles : puzzles;
+            return hardPuzzles;
         case 'intermediate':
-            return intermediatePuzzles.length > 0 ? intermediatePuzzles : puzzles;
+            return intermediatePuzzles;
         case 'advance':
-            return advancePuzzles.length > 0 ? advancePuzzles : puzzles;
+            return advancePuzzles;
         default:
             return puzzles;
     }
@@ -155,49 +162,57 @@ export const getDailyPuzzle = (): Puzzle => {
   const diff = now.getTime() - startOfYear.getTime();
   const oneDay = 1000 * 60 * 60 * 24;
   const dayOfYear = Math.floor(diff / oneDay);
-  const puzzle = puzzles[dayOfYear % puzzles.length];
-  // Force daily puzzle to be medium difficulty for reward consistency
-  return { ...puzzle, difficulty: 'medium' };
+  
+  // Use a puzzle from the full list to ensure variety
+  const puzzleIndex = dayOfYear % puzzles.length;
+  const puzzle = puzzles[puzzleIndex];
+  
+  // To ensure the daily puzzle is unique and doesn't just repeat a level,
+  // we re-encrypt it with a key based on the day of the year.
+  const dailyKeyIndex = dayOfYear % puzzleKeys.length;
+  const dailyCipher = createCipher(puzzleKeys[dailyKeyIndex]);
+  
+  return { 
+    ...puzzle, 
+    id: 10000 + dayOfYear, // Unique ID for daily puzzles
+    difficulty: 'medium', // Keep daily challenge consistent
+    cipher: dailyCipher,
+    text: encrypt(puzzle.quote, dailyCipher)
+  };
 };
 
+
 export const getTotalPuzzles = (difficulty: Difficulty): number => {
-    // Each category has 50 levels now.
     return 50;
 }
 
-export const getPuzzleForLevel = (difficulty: Difficulty, level: number): Puzzle => {
-    const difficultyOrder: Difficulty[] = ['easy', 'medium', 'hard', 'intermediate', 'advance'];
-    const difficultyIndex = difficultyOrder.indexOf(difficulty);
+export const getPuzzleForLevel = (difficulty: Difficulty, level: number): Puzzle | undefined => {
+    if (level <= 0 || level > 50) {
+        return undefined;
+    }
 
     const puzzlePool = getPuzzlePool(difficulty);
+
     if (puzzlePool.length === 0) {
-        // Fallback to all puzzles if a category is empty
-        const fallbackIndex = (level - 1) % puzzles.length;
-        return puzzles[fallbackIndex];
+        return undefined; // No puzzles for this difficulty
     }
     
-    // Create a deterministic but unique index for each level/difficulty combination
-    const uniqueIndex = (level - 1 + (difficultyIndex * 50)) % puzzles.length;
+    // Use the level to pick a puzzle, wrapping around if not enough unique puzzles exist for 50 levels
+    const poolIndex = (level - 1) % puzzlePool.length;
+    const basePuzzle = puzzlePool[poolIndex];
 
-    // To ensure variety within a category, we'll use the unique index to pick from the main puzzle list,
-    // then find a puzzle that matches the desired difficulty. This is a simple way to get variety
-    // without complex mapping, but it may not always provide a puzzle of the exact difficulty
-    // if the main pool is not perfectly balanced. For this implementation, we will cycle within the
-    // specific difficulty pool to ensure difficulty is respected.
-    
-    const categoryIndex = (level - 1) % puzzlePool.length;
-    
-    // We create a new puzzle object to ensure the ID is unique for the level
-    const basePuzzle = puzzlePool[categoryIndex];
-    const newId = (difficultyIndex * 1000) + level;
-    
-    // Re-encrypt with a different key to ensure the puzzle itself is unique
-    const keyIndex = (newId) % puzzleKeys.length;
+    // To make each of the 50 levels feel unique even if base quotes are reused,
+    // we use a different cipher key for each level.
+    const keyIndex = (level - 1) % puzzleKeys.length;
     const newCipher = createCipher(puzzleKeys[keyIndex]);
     
+    const difficultyOrder: Difficulty[] = ['easy', 'medium', 'hard', 'intermediate', 'advance'];
+    const difficultyIndex = difficultyOrder.indexOf(difficulty);
+    const uniqueLevelId = (difficultyIndex * 1000) + level;
+
     return {
         ...basePuzzle,
-        id: newId,
+        id: uniqueLevelId,
         cipher: newCipher,
         text: encrypt(basePuzzle.quote, newCipher),
     };
