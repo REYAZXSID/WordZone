@@ -110,7 +110,7 @@ export function FeedbackClientPage() {
                  <Button asChild className="w-full">
                     <Link href="https://www.instagram.com/reyaz_sid" target="_blank" rel="noopener noreferrer">
                         <Instagram className="mr-2 h-5 w-5" />
-                        @siddhant_hue
+                        Contact Us!
                         <ArrowRight className="ml-auto h-5 w-5" />
                     </Link>
                  </Button>
