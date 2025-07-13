@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { resetUserData } from '@/lib/user-data';
+import { useRouter } from 'next/navigation';
 
 export function SettingsClientPage() {
   const [isClient, setIsClient] = useState(false);
@@ -31,6 +32,7 @@ export function SettingsClientPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [language, setLanguage] = useState('en');
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -65,8 +67,8 @@ export function SettingsClientPage() {
   
   const handleResetProgress = () => {
     resetUserData();
-    window.location.reload(); 
     toast({ title: "Progress Reset", description: "Your game data has been cleared." });
+    router.push('/');
   }
   
   if (!isClient) {
@@ -107,7 +109,7 @@ export function SettingsClientPage() {
             <div className="space-y-0.5">
               <Label htmlFor="theme" className="text-base">Appearance</Label>
               <p className="text-sm text-muted-foreground">
-                Switch between light, dark, and neon modes.
+                Switch between light, dark, and other fun themes.
               </p>
             </div>
             <ThemeToggle />

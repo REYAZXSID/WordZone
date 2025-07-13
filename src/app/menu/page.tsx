@@ -20,13 +20,13 @@ const menuItems: MenuItem[] = [
   },
    {
     name: 'Daily Puzzle',
-    description: 'Solve the puzzle of the day.',
+    description: 'Solve the puzzle of the day for a big reward.',
     href: '/daily',
     icon: <Calendar className="h-8 w-8 text-blue-500" />,
   },
   {
     name: 'Daily Missions',
-    description: 'Complete daily tasks for rewards.',
+    description: 'Complete daily tasks for extra coins.',
     href: '/missions',
     icon: <ListChecks className="h-8 w-8 text-purple-500" />,
   },
@@ -38,7 +38,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'Streak Tracker',
-    description: 'Track your daily puzzle streak.',
+    description: 'Track your daily puzzle streak and earn rewards.',
     href: '/streaks',
     icon: <Flame className="h-8 w-8 text-orange-500" />,
   },
@@ -55,20 +55,14 @@ const menuItems: MenuItem[] = [
     icon: <Star className="h-8 w-8 text-yellow-400" />,
   },
    {
-    name: 'Power-Up Shop',
-    description: 'Purchase hints and helpful items.',
+    name: 'Shop',
+    description: 'Purchase hints, power-ups, and coins.',
     href: '/shop',
     icon: <ShoppingCart className="h-8 w-8 text-green-500" />,
   },
   {
-    name: 'Coin Shop',
-    description: 'Get more coins to spend.',
-    href: '/coin-shop',
-    icon: <CoinsIcon className="h-8 w-8 text-yellow-500" />,
-  },
-  {
     name: 'Leaderboard',
-    description: 'See how you rank against others.',
+    description: 'See how you rank against other players.',
     href: '/leaderboard',
     icon: <Trophy className="h-8 w-8 text-amber-500" />,
   },
@@ -80,7 +74,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'Settings',
-    description: 'Adjust your app preferences.',
+    description: 'Adjust your app preferences and data.',
     href: '/settings',
     icon: <Settings className="h-8 w-8 text-gray-500" />,
   },

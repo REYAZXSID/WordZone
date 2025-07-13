@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Flame, Star, Coins, CheckCircle2 } from 'lucide-react';
-import { addDays, format, isSameDay, startOfDay } from 'date-fns';
+import { addDays, format, isSameDay, startOfDay, differenceInCalendarDays } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +25,55 @@ const streakMilestones: StreakMilestone[] = [
     { days: 14, reward: 50, title: "14-Day Streak" },
 ];
 
+const calculateStreaks = (dates: Date[]) => {
+    if (dates.length === 0) return { current: 0, best: 0 };
+    
+    const sortedDates = dates.map(d => startOfDay(d)).sort((a,b) => a.getTime() - b.getTime());
+    const uniqueDates = sortedDates.filter((date, index, self) => 
+        index === self.findIndex(d => isSameDay(d, date))
+    );
+
+    let currentStreak = 0;
+    let bestStreak = 0;
+    
+    if (uniqueDates.length > 0) {
+        // Check if the most recent date is today or yesterday to count the current streak
+        const today = startOfDay(new Date());
+        const lastDate = uniqueDates[uniqueDates.length - 1];
+        if (isSameDay(lastDate, today) || isSameDay(lastDate, addDays(today, -1))) {
+            currentStreak = 1;
+            for (let i = uniqueDates.length - 1; i > 0; i--) {
+                const diff = differenceInCalendarDays(uniqueDates[i], uniqueDates[i-1]);
+                if (diff === 1) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Calculate best streak
+    if (uniqueDates.length > 0) {
+        bestStreak = 1;
+        let tempStreak = 1;
+        for (let i = 1; i < uniqueDates.length; i++) {
+             const diff = differenceInCalendarDays(uniqueDates[i], uniqueDates[i-1]);
+             if (diff === 1) {
+                 tempStreak++;
+             } else {
+                 tempStreak = 1;
+             }
+             if (tempStreak > bestStreak) {
+                 bestStreak = tempStreak;
+             }
+        }
+    }
+
+    return { current: currentStreak, best: bestStreak };
+};
+
+
 export function StreaksClientPage() {
     const [isClient, setIsClient] = useState(false);
     const [completedDates, setCompletedDates] = useState<Date[]>([]);
@@ -36,14 +85,21 @@ export function StreaksClientPage() {
 
     const loadData = useCallback(() => {
         if (typeof window !== 'undefined') {
-            const userData = getUserData();
-            
-            const storedDates = JSON.parse(localStorage.getItem('crypto_completed_dates') || '[]');
-            const dates: Date[] = storedDates.map((d: string) => new Date(d));
+            const storedDatesStr = localStorage.getItem('crypto_completed_dates') || '[]';
+            const dates: Date[] = JSON.parse(storedDatesStr).map((d: string) => new Date(d));
             setCompletedDates(dates);
 
-            setCurrentStreak(userData.stats.dailyStreak);
-            setBestStreak(userData.stats.bestStreak);
+            const { current, best } = calculateStreaks(dates);
+            setCurrentStreak(current);
+
+            const userData = getUserData();
+            const savedBest = userData.stats.bestStreak;
+            const newBest = Math.max(best, savedBest);
+            setBestStreak(newBest);
+            
+            if (newBest > savedBest || current !== userData.stats.dailyStreak) {
+                 saveUserData({ stats: { ...userData.stats, dailyStreak: current, bestStreak: newBest } });
+            }
 
             const storedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_streaks') || '[]');
             setClaimedMilestones(storedClaimed);
@@ -55,7 +111,7 @@ export function StreaksClientPage() {
         loadData();
 
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'crypto_user_data' || e.key === 'crypto_completed_dates' || e.key === 'crypto_claimed_streaks') {
+            if (e.key === 'crypto_completed_dates' || e.key === 'crypto_claimed_streaks') {
                 loadData();
             }
         };

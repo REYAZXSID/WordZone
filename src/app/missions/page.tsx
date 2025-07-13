@@ -6,53 +6,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Coins, Puzzle, Flame, Lightbulb, CheckCircle2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSound } from '@/hooks/use-sound';
+import { getUserData } from '@/lib/user-data';
+import { isSameDay } from 'date-fns';
 
 type Mission = {
   id: string;
   title: string;
   icon: React.ReactNode;
-  currentProgress: number;
-  targetProgress: number;
   reward: number;
+  targetProgress: number;
+  getProgress: (userData: ReturnType<typeof getUserData>, dailyCompleted: boolean) => number;
 };
 
-// Mock data for daily missions
 const initialMissions: Mission[] = [
   {
     id: 'solve_3_easy',
     title: 'Solve 3 Easy Puzzles',
     icon: <Puzzle className="h-6 w-6 text-green-500" />,
-    currentProgress: 2, // Pre-set progress
-    targetProgress: 3,
     reward: 25,
+    targetProgress: 3,
+    getProgress: (userData) => userData.stats.puzzlesSolvedByDifficulty.easy,
   },
   {
     id: 'complete_daily',
     title: 'Complete the Daily Puzzle',
     icon: <Flame className="h-6 w-6 text-orange-500" />,
-    currentProgress: 1, // Pre-set as complete
-    targetProgress: 1,
     reward: 50,
+    targetProgress: 1,
+    getProgress: (_, dailyCompleted) => (dailyCompleted ? 1 : 0),
   },
   {
     id: 'use_5_hints',
     title: 'Use 5 Hints',
     icon: <Lightbulb className="h-6 w-6 text-yellow-500" />,
-    currentProgress: 5, // Pre-set as complete
-    targetProgress: 5,
     reward: 15,
-  },
-  {
-    id: 'solve_hard_timed',
-    title: 'Solve a Hard Puzzle in under 5 minutes',
-    icon: <Puzzle className="h-6 w-6 text-red-500" />,
-    currentProgress: 0,
-    targetProgress: 1,
-    reward: 100,
+    targetProgress: 5,
+    getProgress: (userData) => userData.stats.hintsUsed,
   },
 ];
 
@@ -63,17 +56,31 @@ export default function MissionsPage() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const { toast } = useToast();
   const playSound = useSound();
+  const [userData, setUserDataState] = useState(getUserData());
+  const [isDailyCompleted, setIsDailyCompleted] = useState(false);
+
+  const refreshData = useCallback(() => {
+    const data = getUserData();
+    setUserDataState(data);
+    
+    const lastCompletionStr = localStorage.getItem('crypto_daily_completed_date');
+    setIsDailyCompleted(lastCompletionStr ? isSameDay(new Date(lastCompletionStr), new Date()) : false);
+
+    const savedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_missions') || '[]');
+    setClaimedMissions(savedClaimed);
+  }, []);
 
   useEffect(() => {
     setIsClient(true);
-    
-    // Load claimed missions from localStorage
-    const savedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_missions') || '[]');
-    setClaimedMissions(savedClaimed);
-    // For demo, we just use the initial set. In a real app, you'd fetch/generate daily missions.
+    refreshData();
     setMissions(initialMissions);
 
-    // Timer logic
+    const handleStorageChange = () => {
+        refreshData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
     const timerInterval = setInterval(() => {
       const now = new Date();
       const tomorrow = new Date(now);
@@ -81,6 +88,12 @@ export default function MissionsPage() {
       tomorrow.setHours(0, 0, 0, 0);
       const diff = tomorrow.getTime() - now.getTime();
       
+      if (diff <= 0) { // If it's a new day
+        localStorage.removeItem('crypto_claimed_missions');
+        setClaimedMissions([]);
+        refreshData();
+      }
+
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -88,8 +101,11 @@ export default function MissionsPage() {
       setTimeLeft({ hours, minutes, seconds });
     }, 1000);
 
-    return () => clearInterval(timerInterval);
-  }, []);
+    return () => {
+        clearInterval(timerInterval);
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [refreshData]);
   
   const handleClaimReward = (mission: Mission) => {
     if (claimedMissions.includes(mission.id)) return;
@@ -129,7 +145,8 @@ export default function MissionsPage() {
             </Card>
 
           {missions.map((mission) => {
-            const isComplete = mission.currentProgress >= mission.targetProgress;
+            const currentProgress = mission.getProgress(userData, isDailyCompleted);
+            const isComplete = currentProgress >= mission.targetProgress;
             const isClaimed = claimedMissions.includes(mission.id);
             const canClaim = isComplete && !isClaimed;
 
@@ -143,8 +160,8 @@ export default function MissionsPage() {
                     <div className="flex-1 space-y-2">
                       <h3 className="font-semibold">{mission.title}</h3>
                       <div className="flex items-center gap-2">
-                          <Progress value={(mission.currentProgress / mission.targetProgress) * 100} className="h-2 w-full sm:w-48" />
-                          <span className="text-xs text-muted-foreground">{mission.currentProgress}/{mission.targetProgress}</span>
+                          <Progress value={(currentProgress / mission.targetProgress) * 100} className="h-2 w-full sm:w-48" />
+                          <span className="text-xs text-muted-foreground">{Math.min(currentProgress, mission.targetProgress)}/{mission.targetProgress}</span>
                       </div>
                     </div>
                   </div>

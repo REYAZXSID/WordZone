@@ -18,6 +18,7 @@ export default function DailyPage() {
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClient, setIsClient] = useState(false);
+  const [isCompletedToday, setIsCompletedToday] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -30,6 +31,11 @@ export default function DailyPage() {
     
     const userData = getUserData();
     setStreak(userData.stats.dailyStreak);
+
+    const lastCompletionStr = localStorage.getItem('crypto_daily_completed_date');
+    if (lastCompletionStr) {
+        setIsCompletedToday(isSameDay(new Date(lastCompletionStr), new Date()));
+    }
 
     // Timer logic
     const timerInterval = setInterval(() => {
@@ -50,16 +56,16 @@ export default function DailyPage() {
   }, [isClient]);
 
   const handleGameComplete = () => {
-    const lastWinDateStr = localStorage.getItem('lastWinDate');
     const today = new Date();
     
-    if (lastWinDateStr && isSameDay(new Date(lastWinDateStr), today)) {
+    if (isCompletedToday) {
         return 0; // Already completed today
     }
 
     const userData = getUserData();
     let currentStreak = userData.stats.dailyStreak;
     
+    const lastWinDateStr = localStorage.getItem('lastWinDate');
     const lastWinDate = lastWinDateStr ? new Date(lastWinDateStr) : null;
     const yesterday = addDays(today, -1);
 
@@ -73,6 +79,7 @@ export default function DailyPage() {
     setStreak(currentStreak);
     
     localStorage.setItem('lastWinDate', today.toDateString());
+    localStorage.setItem('crypto_daily_completed_date', today.toDateString());
 
     const savedDatesStr = localStorage.getItem('crypto_completed_dates') || '[]';
     const savedDates = JSON.parse(savedDatesStr);
@@ -88,7 +95,8 @@ export default function DailyPage() {
       title: 'Daily Puzzle Complete!',
       description: `You earned ${reward} coins! Your streak is now ${currentStreak} days.`,
     });
-
+    
+    setIsCompletedToday(true);
     return reward;
   };
   

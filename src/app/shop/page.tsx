@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { ShopClientPage } from './shop-client-page';
 import { Suspense } from 'react';
@@ -33,7 +34,7 @@ function ShopLoading() {
 export default function ShopPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PageHeader title="Power-Up Shop" />
+      <PageHeader title="Shop" />
       <main className="flex-1 p-4 sm:p-6">
          <Suspense fallback={<ShopLoading />}>
             <ShopClientPage />

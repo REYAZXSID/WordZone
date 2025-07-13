@@ -1,11 +1,34 @@
 
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Menu, ArrowRight, BookOpen, User, Puzzle } from 'lucide-react';
+import { Menu, ArrowRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useState, useEffect } from 'react';
+import { getUserData } from '@/lib/user-data';
 
 export default function Home() {
+  const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
+
+  useEffect(() => {
+    // This runs on the client, after the component mounts
+    const userData = getUserData();
+    if (userData && userData.avatar) {
+      setAvatar(userData.avatar);
+    }
+    
+    const handleStorageChange = () => {
+        const updatedUserData = getUserData();
+        if (updatedUserData && updatedUserData.avatar) {
+            setAvatar(updatedUserData.avatar);
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   return (
     <div className="relative flex min-h-screen flex-col bg-background overflow-hidden">
       
@@ -48,7 +71,19 @@ export default function Home() {
       <main className="flex flex-1 items-center justify-center z-0">
         <div className="flex flex-col items-center text-center p-6">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
-            <Puzzle className="h-12 w-12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-12 w-12"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" />
+            </svg>
           </div>
           <h1 className="text-6xl font-bold tracking-tight">
             <span className="animated-gradient-text">Cryptify</span>
@@ -84,7 +119,7 @@ export default function Home() {
                 className="mt-6 flex items-center justify-center gap-4 group"
             >
                 <Image 
-                    src="https://placehold.co/100x100.png"
+                    src={avatar}
                     data-ai-hint="portrait man"
                     alt="Sid"
                     width={40}
