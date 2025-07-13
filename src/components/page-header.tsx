@@ -33,7 +33,7 @@ export function PageHeader({ title, actions, coins, lives, isClient }: PageHeade
       </div>
 
       <div className="flex-1 text-center">
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {title}
         </h1>
       </div>
