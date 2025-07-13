@@ -102,7 +102,7 @@ export default function Home() {
                     data-ai-hint="portrait man"
                     alt="Sid"
                     width={40}
-                    height={40}
+                    height={30}
                     className="rounded-full border-2 border-primary/50 transition-transform duration-300 group-hover:scale-110"
                 />
                 <span className="font-semibold text-foreground/80 transition-colors duration-300 group-hover:text-primary">
