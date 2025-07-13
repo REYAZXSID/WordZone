@@ -354,6 +354,7 @@ export function GameBoard({ puzzle, level, isDailyChallenge = false, onGameCompl
                 inventory={powerUpInventory}
                 onUsePowerUp={handleUsePowerUp}
                 disabled={isComplete || showGameOverDialog}
+                difficulty={puzzle.difficulty}
             />
 
             <div className="w-full max-w-sm mx-auto p-2 pb-4 rounded-lg">
