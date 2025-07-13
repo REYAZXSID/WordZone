@@ -292,10 +292,10 @@ export function CoinShopClientPage() {
                                    <AlertDialogHeader>
                                        <AlertDialogTitle>Invite a Friend</AlertDialogTitle>
                                        <AlertDialogDescription>
-                                          <span className='font-semibold text-foreground'>Cipher IQ:</span> {SHARE_MESSAGE}
-                                       </AlertDialogDescription>
-                                       <AlertDialogDescription>
-                                          Share the app and earn coins!
+                                          <div>
+                                            <p><span className='font-semibold text-foreground'>Cipher IQ:</span> {SHARE_MESSAGE}</p>
+                                            <p className="mt-2">Share the app and earn coins!</p>
+                                          </div>
                                        </AlertDialogDescription>
                                    </AlertDialogHeader>
                                    <div className="space-y-4">
