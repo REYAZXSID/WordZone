@@ -57,7 +57,7 @@ export function CoinShopClientPage() {
   const playSound = useSound();
 
   const INVITE_URL = 'https://example.com/cipher-iq.apk';
-  const ICON_URL = 'https://files.catbox.moe/wkgd6s.png';
+  const ICON_URL = 'https://files.catbox.moe/romunz.png';
   const SHARE_MESSAGE = "Sharpen your mind with Cipher IQ! Decode quotes, unlock achievements, and climb the leaderboard.";
 
   useEffect(() => {
