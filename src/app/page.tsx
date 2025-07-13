@@ -62,8 +62,10 @@ export default function Home() {
 
       <main className="flex flex-1 items-center justify-center z-0">
         <div className="flex flex-col items-center text-center p-6">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary float-rotate-animation">
-             <Image src="https://files.catbox.moe/romunz.png" alt="Cipher IQ Logo" width={64} height={64} />
+          <div className="mx-auto mb-6 p-1 rounded-full bg-gradient-to-br from-primary via-accent to-yellow-400 float-rotate-animation">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm">
+                <Image src="https://files.catbox.moe/romunz.png" alt="Cipher IQ Logo" width={64} height={64} />
+            </div>
           </div>
           <h1 className="text-6xl font-bold tracking-tight">
             <span className="animated-gradient-text">Cipher IQ</span>
