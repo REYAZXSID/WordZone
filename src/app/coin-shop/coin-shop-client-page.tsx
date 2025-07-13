@@ -42,6 +42,7 @@ const socialRewards: SocialReward[] = [
 export function CoinShopClientPage() {
   const { userData, isClient } = useUserData();
   const [claimedSocial, setClaimedSocial] = useState<string[]>([]);
+  const [visitedTasks, setVisitedTasks] = useState<string[]>([]);
   const { toast } = useToast();
   const playSound = useSound();
 
@@ -49,8 +50,19 @@ export function CoinShopClientPage() {
     if (isClient) {
         const savedClaimed = JSON.parse(localStorage.getItem('crypto_claimed_social') || '[]');
         setClaimedSocial(savedClaimed);
+        const savedVisited = JSON.parse(localStorage.getItem('crypto_visited_tasks') || '[]');
+        setVisitedTasks(savedVisited);
     }
   }, [isClient]);
+  
+  const handleVisit = (rewardId: string) => {
+    if (visitedTasks.includes(rewardId)) return;
+    
+    const newVisited = [...visitedTasks, rewardId];
+    setVisitedTasks(newVisited);
+    localStorage.setItem('crypto_visited_tasks', JSON.stringify(newVisited));
+  };
+
 
   const handleClaimSocial = (reward: SocialReward) => {
     if (!userData || claimedSocial.includes(reward.id)) return;
@@ -107,6 +119,8 @@ export function CoinShopClientPage() {
         <div className="space-y-3">
           {socialRewards.map((reward) => {
             const isClaimed = claimedSocial.includes(reward.id);
+            const hasVisited = visitedTasks.includes(reward.id);
+
             return (
                 <Card key={reward.id} className="transition-all">
                 <CardContent className="flex items-center justify-between p-4">
@@ -118,15 +132,20 @@ export function CoinShopClientPage() {
                     </div>
                     </div>
                     <div className="flex items-center gap-2">
-                         <Button asChild variant="outline" size="sm">
-                            <Link href={reward.url} target="_blank" rel="noopener noreferrer">
-                                {reward.actionText}
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                         </Button>
-                        <Button size="sm" onClick={() => handleClaimSocial(reward)} disabled={isClaimed}>
-                            {isClaimed ? 'Claimed' : 'Claim'}
-                        </Button>
+                        {isClaimed ? (
+                            <Button size="sm" disabled>Claimed</Button>
+                        ) : hasVisited ? (
+                            <Button size="sm" onClick={() => handleClaimSocial(reward)}>
+                                Claim
+                            </Button>
+                        ) : (
+                             <Button asChild size="sm" variant="outline" onClick={() => handleVisit(reward.id)}>
+                                <Link href={reward.url} target="_blank" rel="noopener noreferrer">
+                                    {reward.actionText}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                             </Button>
+                        )}
                     </div>
                 </CardContent>
                 </Card>
