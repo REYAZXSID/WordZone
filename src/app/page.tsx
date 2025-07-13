@@ -12,8 +12,10 @@ import { useUserData } from '@/hooks/use-user-data';
 export default function Home() {
   const { userData } = useUserData();
   const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     if (userData && userData.avatar) {
       setAvatar(userData.avatar);
     }
@@ -32,7 +34,7 @@ export default function Home() {
 
         {/* Pink Blossom Bubbles */}
         <div className="pink-blossom:block hidden">
-          {Array.from({ length: 15 }).map((_, i) => {
+          {isMounted && Array.from({ length: 15 }).map((_, i) => {
             const style = {
               left: `${Math.random() * 100}vw`,
               width: `${Math.random() * 60 + 20}px`,
