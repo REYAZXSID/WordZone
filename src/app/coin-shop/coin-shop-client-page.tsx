@@ -196,24 +196,20 @@ export function CoinShopClientPage() {
                 await navigator.share({ ...shareData, files: [file] });
                 toast({ title: "Thanks for sharing!", description: "You've received a reward." });
                 handleRewardClaim(100, 'referral', false);
-            } else if (navigator.share) {
-                await navigator.share(shareData);
-                toast({ title: "Thanks for sharing!", description: "You've received a reward." });
-                handleRewardClaim(100, 'referral', false);
             } else {
-                await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-                toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
+                 // Fallback to sharing without the icon if files are not supported
+                 await navigator.share(shareData);
+                 toast({ title: "Thanks for sharing!", description: "You've received a reward." });
                  handleRewardClaim(100, 'referral', false);
             }
         } catch (error) {
-            console.error('Error sharing with icon:', error);
-            // Fallback for cases where fetch might fail or share is cancelled
+            console.error('Error sharing with icon, falling back to text only:', error);
             try {
-              if (navigator.share) {
+              if (navigator.share) { // Fallback to text only share
                   await navigator.share(shareData);
                   toast({ title: "Thanks for sharing!", description: "You've received a reward." });
                   handleRewardClaim(100, 'referral', false);
-              } else {
+              } else { // Fallback to clipboard
                   await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
                   toast({ title: "Link Copied!", description: "The invite link has been copied to your clipboard. You've received a reward." });
                   handleRewardClaim(100, 'referral', false);
