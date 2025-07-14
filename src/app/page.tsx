@@ -98,7 +98,7 @@ export default function Home() {
                 className="mt-6 flex items-center justify-center gap-4 group"
             >
                 <Image 
-                    src="https://files.catbox.moe/uynvr6.png"
+                    src="https://files.catbox.moe/ckpfrf.png"
                     data-ai-hint="portrait man"
                     alt="Sid"
                     width={40}
